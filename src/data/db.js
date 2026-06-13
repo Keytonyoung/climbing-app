@@ -5,7 +5,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 let dbPromise = null
 
@@ -21,6 +21,13 @@ export function getDB() {
         // v2: recorded approach trails (Phase 3b).
         if (oldVersion < 2) {
           db.createObjectStore('tracks', { keyPath: 'id' })
+        }
+        // v3: notes (one per target, key = "kind:id") + photos (many per target,
+        // looked up by a targetKey index). Phase 3c.
+        if (oldVersion < 3) {
+          db.createObjectStore('notes', { keyPath: 'id' })
+          const photos = db.createObjectStore('photos', { keyPath: 'id' })
+          photos.createIndex('targetKey', 'targetKey')
         }
       },
     })

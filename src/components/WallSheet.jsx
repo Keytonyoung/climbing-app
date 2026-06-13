@@ -1,6 +1,8 @@
 // Bottom sheet listing the routes on a tapped wall. Tap a route to open its
 // detail view.
 
+import NotesPhotos from './NotesPhotos'
+
 const TYPE_LABELS = {
   sport: 'Sport',
   trad: 'Trad',
@@ -33,6 +35,8 @@ export default function WallSheet({ wall, tracks = [], onOpenTrack, onSelectRout
           ))}
         </div>
       )}
+
+      <NotesPhotos kind="wall" id={wall.id} />
 
       <p className="sheet-count">{wall.routes.length} routes</p>
       <ul className="route-list">

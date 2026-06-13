@@ -1,6 +1,8 @@
 // Full detail view for a single route. Shown as a bottom sheet over the map.
 // Only displays sourced data — never auto-generated safety info (CLAUDE.md §8).
 
+import NotesPhotos from './NotesPhotos'
+
 const TYPE_LABELS = {
   sport: 'Sport',
   trad: 'Trad',
@@ -37,14 +39,14 @@ export default function RouteDetail({ route, wall, onBack, onClose }) {
         {route.grade && <span className="badge-scale">{scale}</span>}
       </div>
 
-      <section className="detail-section">
-        <h3>Description</h3>
-        {route.description ? (
+      {route.description && (
+        <section className="detail-section">
+          <h3>Description</h3>
           <p className="detail-desc">{route.description}</p>
-        ) : (
-          <p className="detail-desc muted">No description available from the source.</p>
-        )}
-      </section>
+        </section>
+      )}
+
+      <NotesPhotos kind="route" id={route.id} />
 
       <section className="detail-section">
         <h3>Location</h3>

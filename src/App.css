@@ -153,6 +153,88 @@ html, body, #root {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Notes & photos block (routes + walls) */
+.notes-photos {
+  margin: 12px 0;
+}
+.notes-photos h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  margin-bottom: 6px;
+}
+.notes-saverow {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+}
+.notes-saved {
+  font-size: 12px;
+  color: #16a34a;
+  font-weight: 600;
+}
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.photo-thumb {
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #eee;
+}
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-add {
+  width: 72px;
+  height: 72px;
+  border: 1px dashed #bbb;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.photo-add:disabled {
+  opacity: 0.6;
+}
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+}
+.photo-viewer img {
+  max-width: 100%;
+  max-height: 75%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.photo-viewer-actions {
+  display: flex;
+  gap: 12px;
+}
+
 /* Filter panel */
 .filter-panel {
   flex-shrink: 0;
@@ -334,6 +416,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   padding: 8px 16px 20px;
+  overflow-y: auto;
   animation: sheet-up 0.2s ease-out;
 }
 @keyframes sheet-up {
