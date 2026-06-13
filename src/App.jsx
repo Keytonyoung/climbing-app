@@ -8,6 +8,8 @@ import {
   DEFAULT_FILTER,
 } from './data/routes'
 import FilterPanel from './components/FilterPanel'
+import WallSheet from './components/WallSheet'
+import RouteDetail from './components/RouteDetail'
 import './App.css'
 
 // Grand Junction, CO
@@ -20,6 +22,8 @@ export default function App() {
   const [ready, setReady] = useState(false)
   const [filter, setFilter] = useState(DEFAULT_FILTER)
   const [showFilter, setShowFilter] = useState(false)
+  const [selectedWall, setSelectedWall] = useState(null)
+  const [selectedRoute, setSelectedRoute] = useState(null)
 
   useEffect(() => {
     if (map.current) return
@@ -92,25 +96,13 @@ export default function App() {
 
       m.on('click', 'wall', (e) => {
         const f = e.features[0]
-        const routes = JSON.parse(f.properties.routes)
-        const list = routes
-          .map(
-            (r) =>
-              `<li><strong>${escapeHtml(r.name)}</strong>` +
-              `<span class="grade">${escapeHtml(r.grade || '—')}</span>` +
-              `<span class="type">${escapeHtml(r.type)}</span></li>`
-          )
-          .join('')
-        const html =
-          `<div class="wall-popup">` +
-          `<h3>${escapeHtml(f.properties.name)}</h3>` +
-          `<p class="path">${escapeHtml(f.properties.path)}</p>` +
-          `<p class="count">${f.properties.routeCount} routes</p>` +
-          `<ul>${list}</ul></div>`
-        new maplibregl.Popup({ maxWidth: '300px' })
-          .setLngLat(f.geometry.coordinates)
-          .setHTML(html)
-          .addTo(m)
+        setSelectedWall({
+          id: f.properties.id,
+          name: f.properties.name,
+          path: f.properties.path,
+          routes: JSON.parse(f.properties.routes),
+        })
+        setSelectedRoute(null)
       })
 
       for (const layer of ['clusters', 'wall']) {
@@ -119,6 +111,7 @@ export default function App() {
       }
 
       setReady(true)
+      if (import.meta.env.DEV) window.__map = m
     })
   }, [])
 
@@ -132,6 +125,18 @@ export default function App() {
   const counts = getFilteredCounts(filter)
   const filtered = !isDefaultFilter(filter)
 
+  // Changing the filter can drop a selected wall's routes — close the sheets.
+  const handleFilterChange = (next) => {
+    setFilter(next)
+    setSelectedWall(null)
+    setSelectedRoute(null)
+  }
+
+  const closeSheets = () => {
+    setSelectedWall(null)
+    setSelectedRoute(null)
+  }
+
   return (
     <div id="app">
       <header id="top-bar">
@@ -144,18 +149,25 @@ export default function App() {
         </button>
       </header>
       {showFilter && (
-        <FilterPanel filter={filter} onChange={setFilter} counts={counts} />
+        <FilterPanel filter={filter} onChange={handleFilterChange} counts={counts} />
       )}
       <div id="map" ref={mapContainer} />
+
+      {selectedRoute && selectedWall && (
+        <RouteDetail
+          route={selectedRoute}
+          wall={selectedWall}
+          onBack={() => setSelectedRoute(null)}
+          onClose={closeSheets}
+        />
+      )}
+      {selectedWall && !selectedRoute && (
+        <WallSheet
+          wall={selectedWall}
+          onSelectRoute={setSelectedRoute}
+          onClose={closeSheets}
+        />
+      )}
     </div>
   )
-}
-
-// Route names/descriptions come from OpenBeta and go into innerHTML, so escape.
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
 }
