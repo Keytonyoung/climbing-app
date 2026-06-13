@@ -1,7 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { getWallsGeoJSON, getSeedInfo } from './data/routes'
+import {
+  getWallsGeoJSON,
+  getFilteredCounts,
+  isDefaultFilter,
+  DEFAULT_FILTER,
+} from './data/routes'
+import FilterPanel from './components/FilterPanel'
 import './App.css'
 
 // Grand Junction, CO
@@ -11,6 +17,9 @@ const INITIAL_ZOOM = 9
 export default function App() {
   const mapContainer = useRef(null)
   const map = useRef(null)
+  const [ready, setReady] = useState(false)
+  const [filter, setFilter] = useState(DEFAULT_FILTER)
+  const [showFilter, setShowFilter] = useState(false)
 
   useEffect(() => {
     if (map.current) return
@@ -33,13 +42,12 @@ export default function App() {
 
       m.addSource('walls', {
         type: 'geojson',
-        data: getWallsGeoJSON(),
+        data: getWallsGeoJSON(DEFAULT_FILTER),
         cluster: true,
         clusterMaxZoom: 13,
         clusterRadius: 45,
       })
 
-      // Clustered points: a filled circle that grows with the count.
       m.addLayer({
         id: 'clusters',
         type: 'circle',
@@ -62,8 +70,6 @@ export default function App() {
         },
         paint: { 'text-color': '#ffffff' },
       })
-
-      // A single wall.
       m.addLayer({
         id: 'wall',
         type: 'circle',
@@ -77,7 +83,6 @@ export default function App() {
         },
       })
 
-      // Tap a cluster to zoom into it.
       m.on('click', 'clusters', async (e) => {
         const features = m.queryRenderedFeatures(e.point, { layers: ['clusters'] })
         const clusterId = features[0].properties.cluster_id
@@ -85,7 +90,6 @@ export default function App() {
         m.easeTo({ center: features[0].geometry.coordinates, zoom })
       })
 
-      // Tap a wall to see its routes.
       m.on('click', 'wall', (e) => {
         const f = e.features[0]
         const routes = JSON.parse(f.properties.routes)
@@ -109,29 +113,45 @@ export default function App() {
           .addTo(m)
       })
 
-      // Pointer cursor over tappable things.
       for (const layer of ['clusters', 'wall']) {
         m.on('mouseenter', layer, () => (m.getCanvas().style.cursor = 'pointer'))
         m.on('mouseleave', layer, () => (m.getCanvas().style.cursor = ''))
       }
+
+      setReady(true)
     })
   }, [])
 
-  const info = getSeedInfo()
+  // Push filter changes to the map's data source.
+  useEffect(() => {
+    if (!ready) return
+    const source = map.current.getSource('walls')
+    if (source) source.setData(getWallsGeoJSON(filter))
+  }, [filter, ready])
+
+  const counts = getFilteredCounts(filter)
+  const filtered = !isDefaultFilter(filter)
 
   return (
     <div id="app">
       <header id="top-bar">
         <h1>Western Slope Climbing</h1>
-        <span className="counts">{info.wallCount} walls · {info.routeCount} routes</span>
+        <button
+          className={`filter-btn ${filtered ? 'active' : ''}`}
+          onClick={() => setShowFilter((s) => !s)}
+        >
+          Filter{filtered ? ' •' : ''}
+        </button>
       </header>
+      {showFilter && (
+        <FilterPanel filter={filter} onChange={setFilter} counts={counts} />
+      )}
       <div id="map" ref={mapContainer} />
     </div>
   )
 }
 
-// Route names and descriptions come from OpenBeta and go into innerHTML, so
-// escape them to avoid breaking the popup markup.
+// Route names/descriptions come from OpenBeta and go into innerHTML, so escape.
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')

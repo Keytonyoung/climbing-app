@@ -25,15 +25,90 @@ export function getWall(id) {
   return seed.walls.find((w) => w.id === id)
 }
 
+// --- Filtering ------------------------------------------------------------
+//
+// Two grade scales coexist: YDS (roped — sport/trad/toprope) and V (boulder).
+// ~75% of routes are boulders, so we filter each scale independently and gate
+// everything by route type.
+
+// Route types present in the data, in a sensible display order.
+export const ROUTE_TYPES = ['sport', 'trad', 'toprope', 'boulder', 'aid']
+
+// YDS difficulty buckets by the "5.x" number (letters don't change the bucket).
+// Bounds span the full real-world range so the default filter excludes nothing
+// (the seed data has 5.2 routes; Rifle's 5.14s arrive in a later seed).
+export const YDS_MIN = 0
+export const YDS_MAX = 15
+// V-scale buckets (V0–V17 covers every established boulder grade).
+export const V_MIN = 0
+export const V_MAX = 17
+
+export const DEFAULT_FILTER = {
+  types: [...ROUTE_TYPES],
+  ydsMin: YDS_MIN,
+  ydsMax: YDS_MAX,
+  vMin: V_MIN,
+  vMax: V_MAX,
+}
+
+/** "5.10c" -> 10, "5.9+" -> 9, anything non-YDS -> null. */
+export function parseYdsBase(grade) {
+  if (!grade) return null
+  const m = String(grade).match(/^5\.(\d+)/)
+  return m ? Number(m[1]) : null
+}
+
+/** "V4" -> 4, "V-easy" -> 0, "V10-11" -> 10, anything non-V -> null. */
+export function parseVgrade(grade) {
+  if (!grade) return null
+  if (/^v-?\s*easy/i.test(grade)) return 0
+  const m = String(grade).match(/^V(\d+)/i)
+  return m ? Number(m[1]) : null
+}
+
+/** Does a single route pass the active filter? */
+function routePasses(route, filter) {
+  if (!filter.types.includes(route.type)) return false
+  if (route.type === 'boulder') {
+    const v = parseVgrade(route.grade)
+    return v == null || (v >= filter.vMin && v <= filter.vMax)
+  }
+  // Roped + aid use the YDS range; routes with no YDS grade aren't constrained.
+  const y = parseYdsBase(route.grade)
+  return y == null || (y >= filter.ydsMin && y <= filter.ydsMax)
+}
+
+/** True when the filter shows everything (nothing narrowed). */
+export function isDefaultFilter(filter) {
+  return (
+    filter.types.length === ROUTE_TYPES.length &&
+    filter.ydsMin === YDS_MIN &&
+    filter.ydsMax === YDS_MAX &&
+    filter.vMin === V_MIN &&
+    filter.vMax === V_MAX
+  )
+}
+
+/** Walls whose routes match the filter, each carrying only its matching routes. */
+export function getFilteredWalls(filter) {
+  if (!filter || isDefaultFilter(filter)) return seed.walls
+  const out = []
+  for (const wall of seed.walls) {
+    const routes = wall.routes.filter((r) => routePasses(r, filter))
+    if (routes.length > 0) out.push({ ...wall, routes })
+  }
+  return out
+}
+
 /**
- * Walls as a GeoJSON FeatureCollection for MapLibre. Each feature is one wall;
- * route data rides along in properties (stringified — GeoJSON props must be
- * primitives) so a click handler can render the route list without a lookup.
+ * Filtered walls as a GeoJSON FeatureCollection for MapLibre. Each feature is
+ * one wall; the matching route list rides along in properties (stringified —
+ * GeoJSON props must be primitives) so a click handler needs no lookup.
  */
-export function getWallsGeoJSON() {
+export function getWallsGeoJSON(filter) {
   return {
     type: 'FeatureCollection',
-    features: getWalls().map((wall) => ({
+    features: getFilteredWalls(filter).map((wall) => ({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [wall.lng, wall.lat] },
       properties: {
@@ -44,5 +119,14 @@ export function getWallsGeoJSON() {
         routes: JSON.stringify(wall.routes),
       },
     })),
+  }
+}
+
+/** Wall + route totals for the current filter (for the result count). */
+export function getFilteredCounts(filter) {
+  const walls = getFilteredWalls(filter)
+  return {
+    wallCount: walls.length,
+    routeCount: walls.reduce((n, w) => n + w.routes.length, 0),
   }
 }
