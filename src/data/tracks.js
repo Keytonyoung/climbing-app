@@ -1,53 +1,91 @@
-// Data-layer interface for Cole's recorded approach trails. UI calls ONLY these
-// functions (CLAUDE.md rule 2). Trails are stored locally in IndexedDB.
+// Data-layer interface for recorded approach trails. UI calls ONLY these
+// functions (CLAUDE.md rule 2). Trails now live in the SHARED Supabase backend:
+// everyone reads all trails; only signed-in users write, owner-scoped by RLS.
 //
 // A trail goes from one anchor to another, where an anchor is { kind: 'pin' |
 // 'wall', id }. The trail also keeps its own coordinates, so a deleted anchor
 // never leaves an unrenderable trail — resolveAnchor falls back to the geometry.
 
-import { getDB } from './db'
+import { supabase } from './supabase'
+import { getCurrentUser } from './auth'
 import { getWalls } from './routes'
 
-/** All trails, newest first. */
-export async function getTracks() {
-  const db = await getDB()
-  const tracks = await db.getAll('tracks')
-  return tracks.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-}
-
-/** Create and persist a new trail. Returns the saved track. */
-export async function addTrack({ name, notes, start, end, coordinates }) {
-  const now = new Date().toISOString()
-  const track = {
-    id: crypto.randomUUID(),
-    name: name || '',
-    notes: notes || '',
-    start,
-    end,
-    coordinates,
-    lengthMeters: trackLength(coordinates),
-    source: 'cole',
-    createdAt: now,
-    updatedAt: now,
+// Map a Supabase row (snake_case) to the shape the UI uses.
+function rowToTrack(r) {
+  return {
+    id: r.id,
+    name: r.name,
+    notes: r.notes,
+    start: r.start_anchor,
+    end: r.end_anchor,
+    coordinates: r.coordinates,
+    lengthMeters: r.length_m,
+    authorId: r.author_id,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
   }
-  const db = await getDB()
-  await db.put('tracks', track)
-  if (navigator.storage?.persist) navigator.storage.persist().catch(() => {})
-  return track
 }
 
-/** Persist edits to an existing trail. Returns the updated track. */
+/** All shared trails, newest first. Returns [] if the backend is unreachable. */
+export async function getTracks() {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('tracks')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.warn('getTracks failed:', error.message)
+    return []
+  }
+  return data.map(rowToTrack)
+}
+
+/** Create a shared trail (requires sign-in). Returns the saved track. */
+export async function addTrack({ name, notes, start, end, coordinates }) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Sign in to save a trail.')
+  const { data, error } = await supabase
+    .from('tracks')
+    .insert({
+      id: crypto.randomUUID(),
+      author_id: user.id,
+      name: name || '',
+      notes: notes || '',
+      start_anchor: start,
+      end_anchor: end,
+      coordinates,
+      length_m: trackLength(coordinates),
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return rowToTrack(data)
+}
+
+/** Persist edits to a trail (only your own, per RLS). Returns the updated track. */
 export async function updateTrack(track) {
-  const updated = { ...track, updatedAt: new Date().toISOString() }
-  const db = await getDB()
-  await db.put('tracks', updated)
-  return updated
+  const { data, error } = await supabase
+    .from('tracks')
+    .update({
+      name: track.name,
+      notes: track.notes,
+      start_anchor: track.start,
+      end_anchor: track.end,
+      coordinates: track.coordinates,
+      length_m: track.lengthMeters ?? trackLength(track.coordinates),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', track.id)
+    .select()
+    .single()
+  if (error) throw error
+  return rowToTrack(data)
 }
 
-/** Delete a trail by id. */
+/** Delete a trail by id (only your own, per RLS). */
 export async function deleteTrack(id) {
-  const db = await getDB()
-  await db.delete('tracks', id)
+  const { error } = await supabase.from('tracks').delete().eq('id', id)
+  if (error) throw error
 }
 
 /** Trails as a GeoJSON FeatureCollection of LineStrings, for MapLibre. */

@@ -493,13 +493,17 @@ export default function App() {
   }
 
   async function saveTrack({ name, notes, start, end }) {
-    const coords = saveDraft.coordinates
-    const s = await resolveSaveAnchor(start, coords[0])
-    const e = await resolveSaveAnchor(end, coords[coords.length - 1])
-    await addTrack({ name, notes, start: s.ref, end: e.ref, coordinates: coords })
-    if (s.createdPin || e.createdPin) setPins(await getPins())
-    setTracks(await getTracks())
-    setSaveDraft(null)
+    try {
+      const coords = saveDraft.coordinates
+      const s = await resolveSaveAnchor(start, coords[0])
+      const e = await resolveSaveAnchor(end, coords[coords.length - 1])
+      await addTrack({ name, notes, start: s.ref, end: e.ref, coordinates: coords })
+      if (s.createdPin || e.createdPin) setPins(await getPins())
+      setTracks(await getTracks())
+      setSaveDraft(null)
+    } catch (e) {
+      alert(`Could not save trail: ${e.message || e}`)
+    }
   }
 
   function openTrack(track) {
@@ -562,6 +566,11 @@ export default function App() {
   }
   const toggleTrack = () => {
     if (recording) return // don't hide an active recording
+    // Recording a trail writes to the shared backend — require sign-in first.
+    if (!user && !showTrack) {
+      setShowAuth(true)
+      return
+    }
     setShowTrack((s) => !s)
     setShowFilter(false)
     setAdding(false)
