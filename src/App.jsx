@@ -348,14 +348,18 @@ export default function App() {
   }
 
   async function savePin(merged) {
-    if (draft.isNew) {
-      await addPin(merged)
-    } else {
-      await updatePin(merged)
+    try {
+      if (draft.isNew) {
+        await addPin(merged)
+      } else {
+        await updatePin(merged)
+      }
+      setPins(await getPins())
+      clearMarker()
+      setDraft(null)
+    } catch (e) {
+      alert(`Could not save pin: ${e.message || e}`)
     }
-    setPins(await getPins())
-    clearMarker()
-    setDraft(null)
   }
 
   async function removePin(id) {
@@ -554,6 +558,11 @@ export default function App() {
     armTap(false)
   }
   const toggleAdd = () => {
+    // Adding pins writes to the shared backend — require sign-in first.
+    if (!user && !adding) {
+      setShowAuth(true)
+      return
+    }
     setAdding((a) => {
       const next = !a
       if (!next) armTap(false)
