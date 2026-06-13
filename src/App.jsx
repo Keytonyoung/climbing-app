@@ -28,6 +28,9 @@ import {
   trackLength,
   haversineMeters,
 } from './data/tracks'
+import { useAuth } from './auth/AuthContext'
+import { displayName } from './data/auth'
+import AuthSheet from './components/AuthSheet'
 import FilterPanel from './components/FilterPanel'
 import WallSheet from './components/WallSheet'
 import RouteDetail from './components/RouteDetail'
@@ -72,6 +75,8 @@ export default function App() {
   const recStartRef = useRef(0)
   const recTimerRef = useRef(null)
 
+  const { user } = useAuth()
+  const [showAuth, setShowAuth] = useState(false)
   const [ready, setReady] = useState(false)
   const [filter, setFilter] = useState(DEFAULT_FILTER)
   const [showFilter, setShowFilter] = useState(false)
@@ -598,6 +603,13 @@ export default function App() {
         >
           🥾 Trail
         </button>
+        <button
+          className={`filter-btn account-btn ${user ? 'active' : ''}`}
+          onClick={() => setShowAuth(true)}
+          title={user ? displayName(user) : 'Sign in'}
+        >
+          {user ? displayName(user)[0].toUpperCase() : 'Sign in'}
+        </button>
       </header>
 
       {showFilter && (
@@ -675,6 +687,8 @@ export default function App() {
           onClose={closeSheets}
         />
       )}
+
+      {showAuth && <AuthSheet onClose={() => setShowAuth(false)} />}
     </div>
   )
 }
