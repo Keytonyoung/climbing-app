@@ -5,7 +5,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 let dbPromise = null
 
@@ -13,10 +13,14 @@ export function getDB() {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
       upgrade(db, oldVersion) {
-        // v1: personal pins. Future versions add stores (trails, photos, notes)
-        // by extending this switch — each `case` is a migration step.
+        // Each `if (oldVersion < N)` is a migration step, applied in order.
+        // v1: personal pins.
         if (oldVersion < 1) {
           db.createObjectStore('pins', { keyPath: 'id' })
+        }
+        // v2: recorded approach trails (Phase 3b).
+        if (oldVersion < 2) {
+          db.createObjectStore('tracks', { keyPath: 'id' })
         }
       },
     })

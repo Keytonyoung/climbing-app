@@ -6,7 +6,8 @@
       "PowerShell(Get-Command node -ErrorAction SilentlyContinue; Test-Path \"C:\\\\Program Files\\\\nodejs\\\\node.exe\"; Test-Path \"$env:APPDATA\\\\npm\")",
       "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;\" + $env:PATH; node --version; npm --version)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(PATH='/c/Program Files/nodejs:__TRACKED_VAR__' npm run build)"
+      "Bash(PATH='/c/Program Files/nodejs:__TRACKED_VAR__' npm run build)",
+      "Bash(PATH='/c/Program Files/nodejs:__TRACKED_VAR__' npm run deploy)"
     ]
   }
 }

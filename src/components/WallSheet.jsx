@@ -9,7 +9,7 @@ const TYPE_LABELS = {
   aid: 'Aid',
 }
 
-export default function WallSheet({ wall, onSelectRoute, onClose }) {
+export default function WallSheet({ wall, tracks = [], onOpenTrack, onSelectRoute, onClose }) {
   return (
     <div className="sheet">
       <div className="sheet-handle" />
@@ -22,6 +22,18 @@ export default function WallSheet({ wall, onSelectRoute, onClose }) {
           ✕
         </button>
       </header>
+
+      {tracks.length > 0 && (
+        <div className="wall-tracks">
+          {tracks.map((t) => (
+            <button key={t.id} className="wall-track-row" onClick={() => onOpenTrack(t)}>
+              🥾 {t.name || 'Approach trail'}
+              <span className="route-chevron">›</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <p className="sheet-count">{wall.routes.length} routes</p>
       <ul className="route-list">
         {wall.routes.map((r) => (
