@@ -32,7 +32,56 @@ html, body, #root {
   letter-spacing: 0.02em;
 }
 
+#top-bar .counts {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
 #map {
   flex: 1;
   width: 100%;
+}
+
+/* Wall popup contents (rendered into MapLibre's popup via innerHTML). */
+.wall-popup h3 {
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+.wall-popup .path {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 6px;
+}
+.wall-popup .count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e94560;
+  margin-bottom: 6px;
+}
+.wall-popup ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.wall-popup li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 0;
+  border-top: 1px solid #eee;
+  font-size: 13px;
+}
+.wall-popup .grade {
+  margin-left: auto;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.wall-popup .type {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #888;
+  white-space: nowrap;
 }
