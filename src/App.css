@@ -184,6 +184,52 @@ html, body, #root {
   color: #888;
   margin-bottom: 6px;
 }
+.note-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.note-thread {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.note-item {
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+.note-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.note-date {
+  color: #888;
+  font-size: 12px;
+}
+.note-delete {
+  margin-left: auto;
+  font-size: 12px;
+  color: #c0392b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.note-text {
+  font-size: 15px;
+  line-height: 1.45;
+  margin-top: 2px;
+  white-space: pre-wrap;
+}
+.photos-heading {
+  margin-top: 16px;
+}
+
 .notes-saverow {
   min-height: 28px;
   display: flex;

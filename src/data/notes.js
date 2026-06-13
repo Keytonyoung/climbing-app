@@ -1,48 +1,77 @@
-// Data-layer interface for Cole's notes and photos attached to routes and walls.
-// UI calls ONLY these functions (CLAUDE.md rule 2). Stored locally in IndexedDB.
-// Photos are Cole's own only — OpenBeta photos are never imported (CLAUDE.md §5).
+// Data-layer interface for notes and photos on routes and walls (CLAUDE.md
+// rule 2). NOTES are now a SHARED, timestamped thread in Supabase: many entries
+// per route/wall, each authored and dated — the seed of the social layer.
+// Everyone reads; signed-in users add; you can delete your own.
+//
+// PHOTOS still live locally in IndexedDB for now (Stage A4 moves them to
+// Supabase Storage), so the photo helpers below are unchanged.
 
+import { supabase } from './supabase'
+import { getCurrentUser } from './auth'
 import { getDB } from './db'
 
-/** Stable key for a target: one note per "kind:id", photos indexed by it. */
+/** Stable key for a target, used by the local photo index. */
 export function targetKey(kind, id) {
   return `${kind}:${id}`
 }
 
-// --- Notes (one editable text note per target) ---
+// --- Notes: shared timestamped thread (Supabase) ---
 
-/** The note for a target, or null. */
-export async function getNote(kind, id) {
-  const db = await getDB()
-  return (await db.get('notes', targetKey(kind, id))) || null
+/** All notes for a target, newest first, each with its author's display name. */
+export async function getNotes(kind, id) {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*')
+    .eq('target_kind', kind)
+    .eq('target_id', id)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.warn('getNotes failed:', error.message)
+    return []
+  }
+  // Resolve author names in one extra query (no direct FK to embed on).
+  const authorIds = [...new Set(data.map((n) => n.author_id))]
+  const names = {}
+  if (authorIds.length) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', authorIds)
+    for (const p of profiles || []) names[p.id] = p.display_name
+  }
+  return data.map((n) => ({
+    id: n.id,
+    text: n.text,
+    authorId: n.author_id,
+    authorName: names[n.author_id] || 'Climber',
+    createdAt: n.created_at,
+  }))
 }
 
-/** Upsert a target's note. Empty text deletes the record. */
-export async function saveNote(kind, id, text) {
-  const db = await getDB()
-  const key = targetKey(kind, id)
+/** Add a note to the thread (requires sign-in). */
+export async function addNote(kind, id, text) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Sign in to add a note.')
   const trimmed = (text || '').trim()
-  if (!trimmed) {
-    await db.delete('notes', key)
-    return null
-  }
-  const existing = await db.get('notes', key)
-  const now = new Date().toISOString()
-  const note = {
-    id: key,
-    targetKind: kind,
-    targetId: id,
+  if (!trimmed) return
+  const { error } = await supabase.from('notes').insert({
+    id: crypto.randomUUID(),
+    author_id: user.id,
+    target_kind: kind,
+    target_id: id,
     text: trimmed,
-    source: 'cole',
-    createdAt: existing?.createdAt || now,
-    updatedAt: now,
-  }
-  await db.put('notes', note)
-  if (navigator.storage?.persist) navigator.storage.persist().catch(() => {})
-  return note
+  })
+  if (error) throw error
 }
 
-// --- Photos (many per target) ---
+/** Delete one of your own notes (RLS enforces ownership). */
+export async function deleteNote(noteId) {
+  const { error } = await supabase.from('notes').delete().eq('id', noteId)
+  if (error) throw error
+}
+
+// --- Photos: still local (IndexedDB) until Stage A4 ---
 
 /** A target's photos, newest first. */
 export async function getPhotos(kind, id) {

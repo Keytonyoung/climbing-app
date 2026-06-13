@@ -1,28 +1,34 @@
-// Reusable "your beta" block: an editable text note plus photo attachments for a
-// target (a route or a wall). Self-contained — loads and persists its own data
-// through the notes data layer. Dropped into both RouteDetail and WallSheet.
+// Reusable "beta" block for a route or wall: a shared timestamped NOTE THREAD
+// (everyone's notes, newest first) plus photo attachments. Dropped into both
+// RouteDetail and WallSheet. Notes are shared (Supabase); photos are still
+// local (IndexedDB) until Stage A4.
 
 import { useEffect, useRef, useState } from 'react'
-import { getNote, saveNote, getPhotos, addPhoto, deletePhoto } from '../data/notes'
+import { useAuth } from '../auth/AuthContext'
+import { getNotes, addNote, deleteNote, getPhotos, addPhoto, deletePhoto } from '../data/notes'
 import { downscaleImage } from '../lib/image'
 
+function formatDate(iso) {
+  const d = new Date(iso)
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
 export default function NotesPhotos({ kind, id }) {
-  const [text, setText] = useState('')
-  const [savedText, setSavedText] = useState('')
+  const { user } = useAuth()
+  const [notes, setNotes] = useState([])
+  const [draft, setDraft] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
+  const [noteError, setNoteError] = useState(null)
+
   const [photos, setPhotos] = useState([]) // { id, url }
   const [busy, setBusy] = useState(false)
-  const [viewer, setViewer] = useState(null) // photo being viewed fullscreen
+  const [viewer, setViewer] = useState(null)
   const [photoError, setPhotoError] = useState(null)
   const urlsRef = useRef([])
 
-  // Load this target's note + photos whenever the target changes.
   useEffect(() => {
     let alive = true
-    getNote(kind, id).then((n) => {
-      if (!alive) return
-      setText(n?.text || '')
-      setSavedText(n?.text || '')
-    })
+    getNotes(kind, id).then((rows) => alive && setNotes(rows))
     loadPhotos(alive)
     return () => {
       alive = false
@@ -48,15 +54,29 @@ export default function NotesPhotos({ kind, id }) {
     setPhotos(withUrls)
   }
 
-  async function saveText() {
-    if (text.trim() === savedText.trim()) return
-    await saveNote(kind, id, text)
-    setSavedText(text.trim())
+  async function postNote() {
+    if (!draft.trim()) return
+    setSavingNote(true)
+    setNoteError(null)
+    try {
+      await addNote(kind, id, draft)
+      setDraft('')
+      setNotes(await getNotes(kind, id))
+    } catch (e) {
+      setNoteError(e.message || String(e))
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
+  async function removeNote(noteId) {
+    await deleteNote(noteId)
+    setNotes(await getNotes(kind, id))
   }
 
   async function onPickFile(e) {
     const file = e.target.files?.[0]
-    e.target.value = '' // allow picking the same file again
+    e.target.value = ''
     if (!file) return
     setBusy(true)
     setPhotoError(null)
@@ -79,32 +99,54 @@ export default function NotesPhotos({ kind, id }) {
 
   return (
     <section className="notes-photos">
-      <h3>Your notes</h3>
-      <textarea
-        className="pin-textarea"
-        value={text}
-        placeholder="Your beta — gear, sequence, where to find it…"
-        rows={3}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={saveText}
-      />
-      <div className="notes-saverow">
-        {text.trim() !== savedText.trim() ? (
-          <button className="pin-save" onClick={saveText}>Save note</button>
-        ) : (
-          savedText && <span className="notes-saved">Saved ✓</span>
-        )}
-      </div>
+      <h3>Notes</h3>
 
+      {user ? (
+        <div className="note-compose">
+          <textarea
+            className="pin-textarea"
+            value={draft}
+            placeholder="Add beta — sequence, gear, conditions, where to find it…"
+            rows={2}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <button className="pin-save" disabled={savingNote || !draft.trim()} onClick={postNote}>
+            {savingNote ? 'Posting…' : 'Post note'}
+          </button>
+        </div>
+      ) : (
+        <p className="auth-intro">Sign in to add a note.</p>
+      )}
+      {noteError && <p className="place-error">{noteError}</p>}
+
+      {notes.length > 0 ? (
+        <ul className="note-thread">
+          {notes.map((n) => (
+            <li key={n.id} className="note-item">
+              <div className="note-meta">
+                <strong>{n.authorName}</strong>
+                <span className="note-date">{formatDate(n.createdAt)}</span>
+                {user && n.authorId === user.id && (
+                  <button className="note-delete" onClick={() => removeNote(n.id)}>
+                    Delete
+                  </button>
+                )}
+              </div>
+              <p className="note-text">{n.text}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="detail-desc muted">No notes yet.</p>
+      )}
+
+      <h3 className="photos-heading">Photos</h3>
       <div className="photo-grid">
         {photos.map((p) => (
           <button key={p.id} className="photo-thumb" onClick={() => setViewer(p)}>
             <img src={p.url} alt="" />
           </button>
         ))}
-        {/* A real <label> opens the picker natively — mobile browsers (iOS
-            Safari) often block .click() on a hidden input. No `capture`, so the
-            OS lets Cole take a photo OR pick from the gallery. */}
         <label className={`photo-add ${busy ? 'is-busy' : ''}`}>
           {busy ? '…' : '＋ Photo'}
           <input
