@@ -7,6 +7,18 @@ If a proposed change conflicts with it, flag the conflict explicitly before proc
 
 ---
 
+## AMENDMENT 2026-06-13 — v1 is now multi-user (read this first)
+
+The project pivoted: **v1's milestone is now sharing beta with a trusted group of
+climbing buddies**, not solo use. This brings a backend forward into v1 — a conscious
+product-owner decision by Cole. The sections below are updated to match; the active,
+authoritative build plan lives in **`docs/v1-multiuser-plan.md`** (read it before
+starting any v1 work). Phases 0/1/3 are done; Phase 2 (offline) is folded into the new
+plan's Stage B. Where this amendment and the original text below differ, this amendment
+wins.
+
+---
+
 ## 1. WHO THIS IS FOR
 
 Cole: rock climber based in Grand Junction, CO. Not a professional developer —
@@ -17,6 +29,8 @@ assumptions over uncritical agreement.
 
 Time budget: ~3-5 hours/week. Sessions should end at usable checkpoints.
 Money budget: ~$0 (free tiers only; optional ~$11/yr domain).
+[AMENDED 2026-06-13: Cole will pay ~$25/mo (Supabase Pro) once sharing goes live;
+keep spend at $0 until then. Real money still waits for the scale turning point.]
 
 ## 2. GOALS, IN PRIORITY ORDER
 
@@ -29,7 +43,11 @@ Money budget: ~$0 (free tiers only; optional ~$11/yr domain).
 
 **Explicit NON-goals (do not drift toward these):**
 - Competing with Mountain Project nationally
-- User accounts, social features, or a backend (until traction demands it)
+- ~~User accounts, social features, or a backend (until traction demands it)~~
+  [AMENDED 2026-06-13: a backend + lightweight identity ARE now in v1, to enable
+  friend-group sharing — see `docs/v1-multiuser-plan.md`. Still NOT in v1: moderation,
+  stranger/public contribution (writes are invite-only), and the full social UI
+  (comment threads). Those wait for the scale turning point.]
 - App store presence in v1
 - Monetization features in v1
 - Supporting regions beyond western Colorado in v1
@@ -105,13 +123,21 @@ with phase N broken.
 Definition of v1 done: Cole navigates to a crag he's never visited using only
 the app, with phone in airplane mode from the trailhead.
 
+[AMENDED 2026-06-13: Phases 0, 1, and 3 are DONE (routes/filter/detail; pins; GPS
+trails; notes & photos). Phase 2 (offline) is now Stage B of `docs/v1-multiuser-plan.md`.
+v1's definition is EXTENDED: not just solo airplane-mode navigation, but a trusted
+buddy can see Cole's shared beta (trail/photos/notes) for an area and navigate it
+offline. Target date: 2026-06-20.]
+
 ## 7. SCALE PATH (future, evidence-gated)
 
 Only advance a stage when the previous stage shows real demand:
-1. Personal PWA (now) →
-2. Capacitor wrap → app stores (if friends/partners actively want it) →
-3. Backend module: accounts, shared contributions, photo hosting, moderation
-   (if strangers use it) →
+1. Personal PWA (done) →
+2. **Friend-group sharing (v1, NOW)** — Supabase backend, invite-only identified
+   writes, open read, no moderation. Brought forward from stage 3 per the 2026-06-13
+   amendment. See `docs/v1-multiuser-plan.md`. →
+3. Open/public platform (if strangers use it): moderation/approval, public contribution,
+   full social UI, photo-hosting cost optimization, possibly Capacitor app stores →
 4. Anything bigger (champagne problem; revisit everything then)
 
 Monetization, if ever: freemium offline downloads, regional sponsorships.
