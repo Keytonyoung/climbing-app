@@ -3,13 +3,12 @@
 
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import { sendEmailCode, verifyEmailCode, signOut, displayName } from '../data/auth'
+import { sendMagicLink, signOut, displayName } from '../data/auth'
 
 export default function AuthSheet({ onClose }) {
   const { user } = useAuth()
-  const [step, setStep] = useState('email') // 'email' | 'code'
+  const [step, setStep] = useState('email') // 'email' | 'sent'
   const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
@@ -17,21 +16,8 @@ export default function AuthSheet({ onClose }) {
     setBusy(true)
     setError(null)
     try {
-      await sendEmailCode(email.trim())
-      setStep('code')
-    } catch (e) {
-      setError(e.message || String(e))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function verify() {
-    setBusy(true)
-    setError(null)
-    try {
-      await verifyEmailCode(email.trim(), code.trim())
-      onClose() // signed in — AuthContext updates via the listener
+      await sendMagicLink(email.trim())
+      setStep('sent')
     } catch (e) {
       setError(e.message || String(e))
     } finally {
@@ -59,7 +45,7 @@ export default function AuthSheet({ onClose }) {
         <div className="auth-body">
           <p className="auth-intro">
             Anyone can browse. To add pins, trails, notes, and photos, sign in with
-            your email — we'll send a one-time code (no password).
+            your email — we'll send a sign-in link (no password).
           </p>
 
           {step === 'email' ? (
@@ -74,25 +60,16 @@ export default function AuthSheet({ onClose }) {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <button className="pin-save" disabled={busy || !email.includes('@')} onClick={send}>
-                {busy ? 'Sending…' : 'Send code'}
+                {busy ? 'Sending…' : 'Send sign-in link'}
               </button>
             </>
           ) : (
             <>
-              <p className="auth-intro">Enter the 6-digit code sent to {email}.</p>
-              <input
-                className="pin-input"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                placeholder="123456"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
-              <button className="pin-save" disabled={busy || code.trim().length < 6} onClick={verify}>
-                {busy ? 'Verifying…' : 'Verify & sign in'}
-              </button>
-              <button className="reset" onClick={() => { setStep('email'); setCode(''); setError(null) }}>
+              <p className="auth-intro">
+                Check <strong>{email}</strong> and tap the sign-in link. You can come
+                back here once you're done — you'll be signed in automatically.
+              </p>
+              <button className="reset" onClick={() => { setStep('email'); setError(null) }}>
                 Use a different email
               </button>
             </>
