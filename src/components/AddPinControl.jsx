@@ -12,8 +12,6 @@ export default function AddPinControl({
   armed,
   onCancel,
   geoError,
-  pinCount,
-  onExport,
 }) {
   return (
     <div className="filter-panel">
@@ -52,15 +50,6 @@ export default function AddPinControl({
       )}
 
       {geoError && <p className="place-error">{geoError}</p>}
-
-      {pinCount > 0 && (
-        <div className="filter-footer">
-          <span className="result-count">{pinCount} pins saved</span>
-          <button className="reset" onClick={onExport}>
-            Export (.geojson)
-          </button>
-        </div>
-      )}
     </div>
   )
 }

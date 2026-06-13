@@ -13,7 +13,6 @@ import {
   updatePin,
   deletePin,
   getPinsGeoJSON,
-  exportPinsGeoJSON,
   categoryColor,
   CATEGORIES,
   DEFAULT_CATEGORY,
@@ -374,17 +373,6 @@ export default function App() {
     setDraft(null)
   }
 
-  function downloadPins() {
-    const text = exportPinsGeoJSON(pins)
-    const blob = new Blob([text], { type: 'application/geo+json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `climbing-pins-${new Date().toISOString().slice(0, 10)}.geojson`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   // --- Trail recording engine ---
 
   async function requestWakeLock() {
@@ -633,8 +621,6 @@ export default function App() {
           armed={tapArmed}
           onCancel={() => armTap(false)}
           geoError={geoError}
-          pinCount={pins.length}
-          onExport={downloadPins}
         />
       )}
       {(showTrack || recording) && (

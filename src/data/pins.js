@@ -119,24 +119,3 @@ export function getPinsGeoJSON(pins) {
     })),
   }
 }
-
-/** Pretty-printed GeoJSON string of all loaded pins, for a quick file export. */
-export function exportPinsGeoJSON(pins) {
-  const fc = {
-    type: 'FeatureCollection',
-    features: pins.map((p) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
-      properties: {
-        id: p.id,
-        category: p.category,
-        label: p.label,
-        notes: p.notes,
-        authorId: p.authorId,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-      },
-    })),
-  }
-  return JSON.stringify(fc, null, 2)
-}
