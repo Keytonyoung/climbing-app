@@ -208,9 +208,29 @@ html, body, #root {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
-.photo-add:disabled {
+.photo-add.is-busy {
   opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Keep a file input interactive (so a wrapping <label> opens the picker on
+   mobile) while hiding it visually — do NOT use display:none, which iOS
+   Safari treats as non-interactive. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 .photo-viewer {
   position: fixed;

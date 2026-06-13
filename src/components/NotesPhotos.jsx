@@ -12,7 +12,7 @@ export default function NotesPhotos({ kind, id }) {
   const [photos, setPhotos] = useState([]) // { id, url }
   const [busy, setBusy] = useState(false)
   const [viewer, setViewer] = useState(null) // photo being viewed fullscreen
-  const fileRef = useRef(null)
+  const [photoError, setPhotoError] = useState(null)
   const urlsRef = useRef([])
 
   // Load this target's note + photos whenever the target changes.
@@ -59,10 +59,13 @@ export default function NotesPhotos({ kind, id }) {
     e.target.value = '' // allow picking the same file again
     if (!file) return
     setBusy(true)
+    setPhotoError(null)
     try {
       const blob = await downscaleImage(file)
       await addPhoto(kind, id, blob)
       await loadPhotos()
+    } catch (err) {
+      setPhotoError(`Couldn't add that photo: ${err.message || err}`)
     } finally {
       setBusy(false)
     }
@@ -99,22 +102,21 @@ export default function NotesPhotos({ kind, id }) {
             <img src={p.url} alt="" />
           </button>
         ))}
-        <button
-          className="photo-add"
-          onClick={() => fileRef.current?.click()}
-          disabled={busy}
-        >
+        {/* A real <label> opens the picker natively — mobile browsers (iOS
+            Safari) often block .click() on a hidden input. No `capture`, so the
+            OS lets Cole take a photo OR pick from the gallery. */}
+        <label className={`photo-add ${busy ? 'is-busy' : ''}`}>
           {busy ? '…' : '＋ Photo'}
-        </button>
+          <input
+            type="file"
+            accept="image/*"
+            className="visually-hidden"
+            disabled={busy}
+            onChange={onPickFile}
+          />
+        </label>
       </div>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        hidden
-        onChange={onPickFile}
-      />
+      {photoError && <p className="place-error">{photoError}</p>}
 
       {viewer && (
         <div className="photo-viewer" onClick={() => setViewer(null)}>
