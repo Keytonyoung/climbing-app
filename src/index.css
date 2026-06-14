@@ -19,6 +19,8 @@
   --color-primary: var(--pine);
   --color-primary-contrast: #fff;
   --color-header: var(--slate);
+  --color-danger: #c0392b;
+  --color-chip: #eef1f4; /* subtle slate-tint fill for badges/chips */
 
   /* shape */
   --radius: 10px;

@@ -103,7 +103,7 @@ html, body, #root {
 /* Trail recording panel */
 .record-hint {
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-muted);
   line-height: 1.4;
 }
 .record-stats {
@@ -129,7 +129,7 @@ html, body, #root {
 }
 .record-stat-sub {
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-muted);
 }
 .chip-dist {
   margin-left: 6px;
@@ -168,7 +168,7 @@ html, body, #root {
 .anchor-link {
   flex: 1;
   padding: 8px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-line);
   border-radius: 8px;
   background: #fafafa;
   font-size: 14px;
@@ -180,7 +180,7 @@ html, body, #root {
   white-space: nowrap;
 }
 .anchor-arrow {
-  color: #888;
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
@@ -210,7 +210,7 @@ html, body, #root {
   font-weight: 600;
   color: var(--color-header);
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-line);
   border-radius: 8px;
   padding: 8px 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -231,7 +231,7 @@ html, body, #root {
   font-weight: 600;
   color: var(--color-header);
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-line);
   border-radius: 8px;
   padding: 8px 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -254,7 +254,7 @@ html, body, #root {
 }
 .auth-intro {
   font-size: 14px;
-  color: #555;
+  color: var(--color-text-muted);
   line-height: 1.4;
 }
 .auth-who {
@@ -270,7 +270,7 @@ html, body, #root {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #888;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
 }
 .note-compose {
@@ -287,7 +287,7 @@ html, body, #root {
   gap: 10px;
 }
 .note-item {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-line);
   padding-top: 8px;
 }
 .note-meta {
@@ -297,13 +297,13 @@ html, body, #root {
   font-size: 13px;
 }
 .note-date {
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 .note-delete {
   margin-left: auto;
   font-size: 12px;
-  color: #c0392b;
+  color: var(--color-danger);
   background: none;
   border: none;
   cursor: pointer;
@@ -344,7 +344,7 @@ html, body, #root {
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  background: #eee;
+  background: var(--color-chip);
 }
 .photo-thumb img {
   width: 100%;
@@ -358,7 +358,7 @@ html, body, #root {
   border: 1px dashed #bbb;
   border-radius: 8px;
   background: #fafafa;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -439,7 +439,7 @@ html, body, #root {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #888;
+  color: var(--color-text-muted);
 }
 .chips {
   display: flex;
@@ -450,9 +450,9 @@ html, body, #root {
   font-size: 13px;
   padding: 5px 12px;
   border-radius: 16px;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
-  color: #555;
+  border: 1px solid var(--color-line);
+  background: var(--color-chip);
+  color: var(--color-text-muted);
   cursor: pointer;
 }
 .chip.on {
@@ -469,19 +469,19 @@ html, body, #root {
   flex: 1;
   font-size: 14px;
   padding: 6px 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-line);
   border-radius: 6px;
   background: #fff;
 }
 .range .dash {
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-muted);
 }
 .filter-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-line);
   padding-top: 10px;
 }
 .result-count {
@@ -491,9 +491,9 @@ html, body, #root {
 }
 .reset {
   font-size: 13px;
-  color: #555;
+  color: var(--color-text-muted);
   background: none;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-line);
   border-radius: 6px;
   padding: 5px 12px;
   cursor: pointer;
@@ -518,9 +518,9 @@ html, body, #root {
   font-weight: 600;
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
-  color: #333;
+  border: 1px solid var(--color-line);
+  background: var(--color-chip);
+  color: var(--color-text);
   cursor: pointer;
 }
 .place-btn.primary {
@@ -534,11 +534,11 @@ html, body, #root {
   justify-content: space-between;
   gap: 8px;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text);
 }
 .place-error {
   font-size: 13px;
-  color: #c0392b;
+  color: var(--color-danger);
 }
 
 /* Pin edit sheet inputs */
@@ -547,7 +547,7 @@ html, body, #root {
   width: 100%;
   font-size: 15px;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-line);
   border-radius: 8px;
   font-family: inherit;
   resize: vertical;
@@ -572,10 +572,10 @@ html, body, #root {
   font-size: 15px;
   font-weight: 600;
   padding: 12px 18px;
-  border: 1px solid #c0392b;
+  border: 1px solid var(--color-danger);
   border-radius: 8px;
   background: #fff;
-  color: #c0392b;
+  color: var(--color-danger);
   cursor: pointer;
 }
 
@@ -597,20 +597,20 @@ html, body, #root {
   z-index: 5;
   display: flex;
   flex-direction: column;
-  padding: 8px 16px 20px;
+  padding: 10px 18px calc(22px + env(safe-area-inset-bottom));
   overflow-y: auto;
-  animation: sheet-up 0.2s ease-out;
+  animation: sheet-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes sheet-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
 .sheet-handle {
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: #ccc;
-  margin: 4px auto 10px;
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--color-line);
+  margin: 2px auto 14px;
   flex-shrink: 0;
 }
 .sheet-header {
@@ -621,17 +621,19 @@ html, body, #root {
   flex-shrink: 0;
 }
 .sheet-header h2 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
 }
 .sheet-path {
   font-size: 12px;
-  color: #777;
+  color: var(--color-text-muted);
   margin-top: 2px;
 }
 .sheet-close {
   font-size: 18px;
-  color: #888;
+  color: var(--color-text-muted);
   background: none;
   border: none;
   cursor: pointer;
@@ -667,16 +669,19 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 4px;
+  padding: 13px 6px;
   border: none;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-line);
   background: none;
   cursor: pointer;
   text-align: left;
   font-size: 15px;
+  border-radius: 8px;
+  transition: background 0.12s;
 }
+.route-row:hover,
 .route-row:active {
-  background: #f7f7f7;
+  background: var(--color-chip);
 }
 .route-name {
   flex: 1;
@@ -692,19 +697,20 @@ html, body, #root {
 .route-type {
   font-size: 11px;
   text-transform: uppercase;
-  color: #888;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 .route-chevron {
-  color: #ccc;
+  color: #aebac4;
   font-size: 18px;
 }
 
 /* Route detail view */
 .detail-name {
-  font-size: 22px;
+  font-size: 23px;
   font-weight: 700;
-  margin: 8px 0;
+  letter-spacing: -0.02em;
+  margin: 6px 0 10px;
   flex-shrink: 0;
 }
 .detail-badges {
@@ -715,12 +721,12 @@ html, body, #root {
   flex-shrink: 0;
 }
 .badge {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 14px;
-  background: #f0f0f0;
-  color: #333;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: var(--color-chip);
+  color: var(--color-text);
 }
 .grade-badge {
   background: var(--color-header);
@@ -729,7 +735,7 @@ html, body, #root {
 .badge-scale {
   font-size: 11px;
   text-transform: uppercase;
-  color: #999;
+  color: var(--color-text-muted);
 }
 .detail-section {
   overflow-y: auto;
@@ -740,7 +746,7 @@ html, body, #root {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #888;
+  color: var(--color-text-muted);
   margin-bottom: 4px;
 }
 .detail-desc {
@@ -749,23 +755,50 @@ html, body, #root {
   white-space: pre-wrap;
 }
 .detail-desc.muted {
-  color: #aaa;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 .detail-loc {
   font-size: 14px;
-  color: #555;
+  color: var(--color-text-muted);
 }
 .detail-footer {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-line);
   padding-top: 10px;
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 .detail-disclaimer {
   margin-top: 6px;
   font-size: 11px;
-  color: #aaa;
+  color: var(--color-text-muted);
   line-height: 1.4;
+}
+
+/* --- Shine: focus rings, hover transitions, pill chips --- */
+.pin-input:focus,
+.pin-textarea:focus,
+.range select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.16);
+}
+.chip {
+  border-radius: 999px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.pin-save,
+.place-btn,
+.reset,
+.pin-delete,
+.sheet-close {
+  transition: filter 0.12s, background 0.12s, border-color 0.12s;
+}
+.pin-save:hover,
+.place-btn:hover {
+  filter: brightness(1.06);
+}
+.sheet-close:hover {
+  color: var(--color-text);
 }
