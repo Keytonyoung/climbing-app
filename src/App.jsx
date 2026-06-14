@@ -30,6 +30,7 @@ import {
 import { useAuth } from './auth/AuthContext'
 import { displayName } from './data/auth'
 import { initSync } from './data/sync'
+import { downloadArea } from './lib/tiles'
 import AuthSheet from './components/AuthSheet'
 import FilterPanel from './components/FilterPanel'
 import WallSheet from './components/WallSheet'
@@ -77,6 +78,8 @@ export default function App() {
 
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
+  const [dl, setDl] = useState(null) // offline-download state
+
   const [ready, setReady] = useState(false)
   const [filter, setFilter] = useState(DEFAULT_FILTER)
   const [showFilter, setShowFilter] = useState(false)
@@ -586,6 +589,27 @@ export default function App() {
     armTap(false)
   }
 
+  async function downloadThisArea() {
+    if (!map.current || dl?.running) return
+    setDl({ running: true, done: 0, total: 0 })
+    try {
+      await downloadArea(map.current, {
+        onProgress: (done, total) => setDl({ running: true, done, total }),
+      })
+      setDl({ running: false, finished: true })
+      setTimeout(() => setDl(null), 3000)
+    } catch (e) {
+      setDl(null)
+      alert(`Couldn't save this area: ${e.message || e}`)
+    }
+  }
+
+  const dlLabel = !dl
+    ? '⬇ Save area offline'
+    : dl.finished
+      ? 'Saved offline ✓'
+      : `Saving… ${dl.done}/${dl.total || '…'}`
+
   const counts = getFilteredCounts(filter)
   const filtered = !isDefaultFilter(filter)
 
@@ -656,6 +680,14 @@ export default function App() {
       )}
 
       <div id="map" ref={mapContainer} />
+
+      <button
+        className="offline-btn"
+        onClick={downloadThisArea}
+        disabled={dl?.running}
+      >
+        {dlLabel}
+      </button>
 
       {draft && (
         <PinEditSheet

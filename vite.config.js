@@ -8,6 +8,21 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Cache OpenFreeMap tiles, glyphs, sprites, and the style JSON so a
+        // downloaded area (and anything viewed online) renders offline.
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/tiles\.openfreemap\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'openfreemap-tiles',
+              expiration: { maxEntries: 6000, maxAgeSeconds: 60 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Western Slope Climbing',
         short_name: 'Climbing',
