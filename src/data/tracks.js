@@ -9,6 +9,7 @@
 import { supabase } from './supabase'
 import { getCurrentUser } from './auth'
 import { getWalls } from './routes'
+import { isOnline, cachePutAll, cacheGetAll, cachePut, cacheDelete, enqueue } from './sync'
 
 // Map a Supabase row (snake_case) to the shape the UI uses.
 function rowToTrack(r) {
@@ -26,66 +27,82 @@ function rowToTrack(r) {
   }
 }
 
-/** All shared trails, newest first. Returns [] if the backend is unreachable. */
+/** All shared trails, newest first. Online: fetch + refresh cache. Offline: cache. */
 export async function getTracks() {
-  if (!supabase) return []
-  const { data, error } = await supabase
-    .from('tracks')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) {
-    console.warn('getTracks failed:', error.message)
-    return []
+  if (isOnline() && supabase) {
+    const { data, error } = await supabase
+      .from('tracks')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (!error) {
+      await cachePutAll('tracks', data)
+      return data.map(rowToTrack)
+    }
+    console.warn('getTracks online failed, using cache:', error.message)
   }
-  return data.map(rowToTrack)
+  const cached = await cacheGetAll('tracks')
+  return cached.sort((a, b) => b.created_at.localeCompare(a.created_at)).map(rowToTrack)
 }
 
-/** Create a shared trail (requires sign-in). Returns the saved track. */
+/** Create a trail (requires sign-in). Writes through cache; queues if offline. */
 export async function addTrack({ name, notes, start, end, coordinates }) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Sign in to save a trail.')
-  const { data, error } = await supabase
-    .from('tracks')
-    .insert({
-      id: crypto.randomUUID(),
-      author_id: user.id,
-      name: name || '',
-      notes: notes || '',
-      start_anchor: start,
-      end_anchor: end,
-      coordinates,
-      length_m: trackLength(coordinates),
-    })
-    .select()
-    .single()
-  if (error) throw error
-  return rowToTrack(data)
+  const now = new Date().toISOString()
+  const row = {
+    id: crypto.randomUUID(),
+    author_id: user.id,
+    name: name || '',
+    notes: notes || '',
+    start_anchor: start,
+    end_anchor: end,
+    coordinates,
+    length_m: trackLength(coordinates),
+    created_at: now,
+    updated_at: now,
+  }
+  await cachePut('tracks', row)
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('tracks').insert(row)
+    if (error) await enqueue({ table: 'tracks', op: 'insert', payload: row })
+  } else {
+    await enqueue({ table: 'tracks', op: 'insert', payload: row })
+  }
+  return rowToTrack(row)
 }
 
 /** Persist edits to a trail (only your own, per RLS). Returns the updated track. */
 export async function updateTrack(track) {
-  const { data, error } = await supabase
-    .from('tracks')
-    .update({
-      name: track.name,
-      notes: track.notes,
-      start_anchor: track.start,
-      end_anchor: track.end,
-      coordinates: track.coordinates,
-      length_m: track.lengthMeters ?? trackLength(track.coordinates),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', track.id)
-    .select()
-    .single()
-  if (error) throw error
-  return rowToTrack(data)
+  const existing = (await cacheGetAll('tracks')).find((r) => r.id === track.id) || {}
+  const changes = {
+    name: track.name,
+    notes: track.notes,
+    start_anchor: track.start,
+    end_anchor: track.end,
+    coordinates: track.coordinates,
+    length_m: track.lengthMeters ?? trackLength(track.coordinates),
+    updated_at: new Date().toISOString(),
+  }
+  const row = { ...existing, ...changes, id: track.id }
+  await cachePut('tracks', row)
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('tracks').update(changes).eq('id', track.id)
+    if (error) await enqueue({ table: 'tracks', op: 'update', payload: { id: track.id, changes } })
+  } else {
+    await enqueue({ table: 'tracks', op: 'update', payload: { id: track.id, changes } })
+  }
+  return rowToTrack(row)
 }
 
 /** Delete a trail by id (only your own, per RLS). */
 export async function deleteTrack(id) {
-  const { error } = await supabase.from('tracks').delete().eq('id', id)
-  if (error) throw error
+  await cacheDelete('tracks', id)
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('tracks').delete().eq('id', id)
+    if (error) await enqueue({ table: 'tracks', op: 'delete', payload: { id } })
+  } else {
+    await enqueue({ table: 'tracks', op: 'delete', payload: { id } })
+  }
 }
 
 /** Trails as a GeoJSON FeatureCollection of LineStrings, for MapLibre. */

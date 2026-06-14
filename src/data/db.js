@@ -1,11 +1,12 @@
-// IndexedDB connection for Cole's personal data (pins, and later trails/photos).
-// Owned by the data layer — UI never imports this directly (CLAUDE.md rule 2);
-// it goes through pins.js and future siblings.
+// IndexedDB connection. Owned by the data layer — UI never imports this directly
+// (CLAUDE.md rule 2). Now serves the OFFLINE layer (Stage B): the pins/tracks/
+// notes stores hold a read cache of shared data (Supabase ROW shape), and the
+// outbox holds writes made offline, to flush on reconnect. See sync.js.
 
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 3
+const DB_VERSION = 4
 
 let dbPromise = null
 
@@ -28,6 +29,11 @@ export function getDB() {
           db.createObjectStore('notes', { keyPath: 'id' })
           const photos = db.createObjectStore('photos', { keyPath: 'id' })
           photos.createIndex('targetKey', 'targetKey')
+        }
+        // v4 (Stage B): outbox of writes made offline, flushed on reconnect.
+        // The pins/tracks/notes stores above are reused as the read cache.
+        if (oldVersion < 4) {
+          db.createObjectStore('outbox', { keyPath: 'id' })
         }
       },
     })

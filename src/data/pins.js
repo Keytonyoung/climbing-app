@@ -8,6 +8,7 @@
 
 import { supabase } from './supabase'
 import { getCurrentUser } from './auth'
+import { isOnline, cachePutAll, cacheGetAll, cachePut, cacheDelete, enqueue } from './sync'
 
 // Pin categories: the single source of truth for labels and map colors.
 // Colors are chosen to read as distinct from the red (#e94560) climbing walls.
@@ -44,64 +45,80 @@ function rowToPin(r) {
   }
 }
 
-/** All shared pins, newest first. Returns [] if the backend is unreachable. */
+/** All shared pins, newest first. Online: fetch + refresh cache. Offline: cache. */
 export async function getPins() {
-  if (!supabase) return []
-  const { data, error } = await supabase
-    .from('pins')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) {
-    console.warn('getPins failed:', error.message)
-    return []
+  if (isOnline() && supabase) {
+    const { data, error } = await supabase
+      .from('pins')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (!error) {
+      await cachePutAll('pins', data)
+      return data.map(rowToPin)
+    }
+    console.warn('getPins online failed, using cache:', error.message)
   }
-  return data.map(rowToPin)
+  const cached = await cacheGetAll('pins')
+  return cached.sort((a, b) => b.created_at.localeCompare(a.created_at)).map(rowToPin)
 }
 
-/** Create a shared pin (requires sign-in). Returns the saved pin. */
+/** Create a pin (requires sign-in). Writes through cache; queues if offline. */
 export async function addPin({ category, label, notes, lng, lat }) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Sign in to add a pin.')
-  const { data, error } = await supabase
-    .from('pins')
-    .insert({
-      id: crypto.randomUUID(),
-      author_id: user.id,
-      category: category || DEFAULT_CATEGORY,
-      label: label || '',
-      notes: notes || '',
-      lng,
-      lat,
-    })
-    .select()
-    .single()
-  if (error) throw error
-  return rowToPin(data)
+  const now = new Date().toISOString()
+  const row = {
+    id: crypto.randomUUID(),
+    author_id: user.id,
+    category: category || DEFAULT_CATEGORY,
+    label: label || '',
+    notes: notes || '',
+    lng,
+    lat,
+    created_at: now,
+    updated_at: now,
+  }
+  await cachePut('pins', row) // optimistic — shows immediately
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('pins').insert(row)
+    if (error) await enqueue({ table: 'pins', op: 'insert', payload: row })
+  } else {
+    await enqueue({ table: 'pins', op: 'insert', payload: row })
+  }
+  return rowToPin(row)
 }
 
 /** Persist edits to a pin (only your own, per RLS). Returns the updated pin. */
 export async function updatePin(pin) {
-  const { data, error } = await supabase
-    .from('pins')
-    .update({
-      category: pin.category,
-      label: pin.label,
-      notes: pin.notes,
-      lng: pin.lng,
-      lat: pin.lat,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', pin.id)
-    .select()
-    .single()
-  if (error) throw error
-  return rowToPin(data)
+  const existing = (await cacheGetAll('pins')).find((r) => r.id === pin.id) || {}
+  const changes = {
+    category: pin.category,
+    label: pin.label,
+    notes: pin.notes,
+    lng: pin.lng,
+    lat: pin.lat,
+    updated_at: new Date().toISOString(),
+  }
+  const row = { ...existing, ...changes, id: pin.id }
+  await cachePut('pins', row)
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('pins').update(changes).eq('id', pin.id)
+    if (error) await enqueue({ table: 'pins', op: 'update', payload: { id: pin.id, changes } })
+  } else {
+    await enqueue({ table: 'pins', op: 'update', payload: { id: pin.id, changes } })
+  }
+  return rowToPin(row)
 }
 
 /** Delete a pin by id (only your own, per RLS). */
 export async function deletePin(id) {
-  const { error } = await supabase.from('pins').delete().eq('id', id)
-  if (error) throw error
+  await cacheDelete('pins', id)
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('pins').delete().eq('id', id)
+    if (error) await enqueue({ table: 'pins', op: 'delete', payload: { id } })
+  } else {
+    await enqueue({ table: 'pins', op: 'delete', payload: { id } })
+  }
 }
 
 /** Pins as a GeoJSON FeatureCollection for MapLibre (mirrors getWallsGeoJSON). */

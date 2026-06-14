@@ -7,62 +7,94 @@
 // Supabase Storage), so the photo helpers below are unchanged.
 
 import { supabase } from './supabase'
-import { getCurrentUser } from './auth'
+import { getCurrentUser, displayName } from './auth'
+import { isOnline, cacheGetAll, cachePut, cachePutMany, cacheDelete, enqueue } from './sync'
 
-// --- Notes: shared timestamped thread (Supabase) ---
+// Cached note rows carry a denormalized author_name for offline display; it is
+// NOT a DB column, so it's stripped before writing to Supabase.
+function cacheToNote(r) {
+  return {
+    id: r.id,
+    text: r.text,
+    authorId: r.author_id,
+    authorName: r.author_name || 'Climber',
+    createdAt: r.created_at,
+  }
+}
+
+// --- Notes: shared timestamped thread (Supabase + offline cache) ---
 
 /** All notes for a target, newest first, each with its author's display name. */
 export async function getNotes(kind, id) {
-  if (!supabase) return []
-  const { data, error } = await supabase
-    .from('notes')
-    .select('*')
-    .eq('target_kind', kind)
-    .eq('target_id', id)
-    .order('created_at', { ascending: false })
-  if (error) {
-    console.warn('getNotes failed:', error.message)
-    return []
+  if (isOnline() && supabase) {
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('target_kind', kind)
+      .eq('target_id', id)
+      .order('created_at', { ascending: false })
+    if (!error) {
+      // Resolve author names (no FK to embed on), then cache with names baked in.
+      const authorIds = [...new Set(data.map((n) => n.author_id))]
+      const names = {}
+      if (authorIds.length) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .in('id', authorIds)
+        for (const p of profiles || []) names[p.id] = p.display_name
+      }
+      const rows = data.map((n) => ({ ...n, author_name: names[n.author_id] || 'Climber' }))
+      // Refresh this target's slice of the cache (drop stale, add fresh).
+      const freshIds = new Set(rows.map((r) => r.id))
+      const stale = (await cacheGetAll('notes')).filter(
+        (r) => r.target_kind === kind && r.target_id === id && !freshIds.has(r.id)
+      )
+      for (const s of stale) await cacheDelete('notes', s.id)
+      await cachePutMany('notes', rows)
+      return rows.map(cacheToNote)
+    }
+    console.warn('getNotes online failed, using cache:', error.message)
   }
-  // Resolve author names in one extra query (no direct FK to embed on).
-  const authorIds = [...new Set(data.map((n) => n.author_id))]
-  const names = {}
-  if (authorIds.length) {
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, display_name')
-      .in('id', authorIds)
-    for (const p of profiles || []) names[p.id] = p.display_name
-  }
-  return data.map((n) => ({
-    id: n.id,
-    text: n.text,
-    authorId: n.author_id,
-    authorName: names[n.author_id] || 'Climber',
-    createdAt: n.created_at,
-  }))
+  const cached = (await cacheGetAll('notes'))
+    .filter((r) => r.target_kind === kind && r.target_id === id)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+  return cached.map(cacheToNote)
 }
 
-/** Add a note to the thread (requires sign-in). */
+/** Add a note to the thread (requires sign-in). Queues if offline. */
 export async function addNote(kind, id, text) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Sign in to add a note.')
   const trimmed = (text || '').trim()
   if (!trimmed) return
-  const { error } = await supabase.from('notes').insert({
+  const now = new Date().toISOString()
+  const dbRow = {
     id: crypto.randomUUID(),
     author_id: user.id,
     target_kind: kind,
     target_id: id,
     text: trimmed,
-  })
-  if (error) throw error
+    created_at: now,
+  }
+  await cachePut('notes', { ...dbRow, author_name: displayName(user) })
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('notes').insert(dbRow)
+    if (error) await enqueue({ table: 'notes', op: 'insert', payload: dbRow })
+  } else {
+    await enqueue({ table: 'notes', op: 'insert', payload: dbRow })
+  }
 }
 
-/** Delete one of your own notes (RLS enforces ownership). */
+/** Delete one of your own notes (RLS enforces ownership). Queues if offline. */
 export async function deleteNote(noteId) {
-  const { error } = await supabase.from('notes').delete().eq('id', noteId)
-  if (error) throw error
+  await cacheDelete('notes', noteId)
+  if (isOnline() && supabase) {
+    const { error } = await supabase.from('notes').delete().eq('id', noteId)
+    if (error) await enqueue({ table: 'notes', op: 'delete', payload: { id: noteId } })
+  } else {
+    await enqueue({ table: 'notes', op: 'delete', payload: { id: noteId } })
+  }
 }
 
 // --- Photos: shared (Supabase Storage 'photos' bucket + photos table) ---

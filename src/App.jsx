@@ -29,6 +29,7 @@ import {
 } from './data/tracks'
 import { useAuth } from './auth/AuthContext'
 import { displayName } from './data/auth'
+import { initSync } from './data/sync'
 import AuthSheet from './components/AuthSheet'
 import FilterPanel from './components/FilterPanel'
 import WallSheet from './components/WallSheet'
@@ -270,6 +271,14 @@ export default function App() {
     const source = map.current.getSource('walls')
     if (source) source.setData(getWallsGeoJSON(filter))
   }, [filter, ready])
+
+  // Flush offline-queued writes on reconnect, then refresh shared data.
+  useEffect(() => {
+    return initSync(async () => {
+      setPins(await getPins())
+      setTracks(await getTracks())
+    })
+  }, [])
 
   // Push pin changes to the pins source; keep the ref in sync for click handlers.
   useEffect(() => {
