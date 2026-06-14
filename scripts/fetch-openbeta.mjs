@@ -16,8 +16,18 @@ import { fileURLToPath } from 'node:url'
 
 const API = 'https://api.openbeta.io'
 
-// Top-level western CO areas to seed. Add more here as Cole's climbing expands.
-const SEED_AREAS = ['Unaweep Canyon', 'Colorado National Monument']
+// Areas to seed (OpenBeta region/area names — verified to resolve to data).
+// Add more here as Cole's climbing expands. NOTE: this bundles route data into
+// the app and is near its practical ceiling (~7.5k routes); broader coverage
+// needs the backend route re-architecture (see docs/v1-multiuser-plan.md).
+const SEED_AREAS = [
+  'Unaweep Canyon',
+  'Colorado National Monument',
+  'Southeast Utah', // Moab + Indian Creek / Castle Valley region
+  'Glenwood Springs',
+  'Glenwood Canyon',
+  'Independence Pass', // Roaring Fork valley
+]
 
 // Build a nested children+climbs query to a fixed depth. The OpenBeta area tree
 // is irregular (region -> canyon -> wall -> sometimes sub-wall), so we go deep
@@ -101,9 +111,17 @@ async function main() {
     console.log(`${walls.length - before} walls`)
   }
 
+  // De-duplicate walls (seeded regions can share sub-areas / fuzzy matches).
+  const byId = new Map()
+  for (const w of walls) if (!byId.has(w.id)) byId.set(w.id, w)
+  const unique = [...byId.values()]
+  if (walls.length !== unique.length) {
+    console.log(`Removed ${walls.length - unique.length} duplicate walls.`)
+  }
+
   // Drop walls without usable coordinates — they can't be placed on the map.
-  const placeable = walls.filter((w) => w.lat != null && w.lng != null)
-  const dropped = walls.length - placeable.length
+  const placeable = unique.filter((w) => w.lat != null && w.lng != null)
+  const dropped = unique.length - placeable.length
   if (dropped > 0) console.log(`Skipped ${dropped} walls with no coordinates.`)
 
   const routeCount = placeable.reduce((n, w) => n + w.routes.length, 0)

@@ -9,6 +9,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
+        // The bundled route seed pushes the main JS chunk past Workbox's 2 MiB
+        // default precache cap. Raise it so the app shell still precaches for
+        // offline. (Long-term fix: move routes to the backend — see the plan.)
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Cache OpenFreeMap tiles, glyphs, sprites, and the style JSON so a
         // downloaded area (and anything viewed online) renders offline.
         runtimeCaching: [
