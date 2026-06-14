@@ -1,1 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><rect width="192" height="192" fill="#1a1a2e"/><text x="96" y="130" text-anchor="middle" font-size="100" font-family="serif">⛰</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4a5a"/>
+      <stop offset="1" stop-color="#1c2530"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+  <!-- back peak (pine) -->
+  <path d="M256 150 L372 360 L140 360 Z" fill="#2e7d5b"/>
+  <!-- front peak (snow/off-white) with a snow cap -->
+  <path d="M196 196 L356 392 L36 392 Z" fill="#f5f7f8"/>
+  <path d="M196 196 L232 240 L210 258 L238 282 L156 282 Z" fill="#cdd6dd"/>
+  <!-- a short route of holds up the slope -->
+  <g fill="#b4441f">
+    <circle cx="262" cy="356" r="9"/>
+    <circle cx="246" cy="320" r="8"/>
+    <circle cx="232" cy="286" r="7"/>
+    <circle cx="216" cy="252" r="6"/>
+  </g>
+</svg>
