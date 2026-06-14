@@ -8,12 +8,6 @@
 
 import { supabase } from './supabase'
 import { getCurrentUser } from './auth'
-import { getDB } from './db'
-
-/** Stable key for a target, used by the local photo index. */
-export function targetKey(kind, id) {
-  return `${kind}:${id}`
-}
 
 // --- Notes: shared timestamped thread (Supabase) ---
 
@@ -71,34 +65,59 @@ export async function deleteNote(noteId) {
   if (error) throw error
 }
 
-// --- Photos: still local (IndexedDB) until Stage A4 ---
+// --- Photos: shared (Supabase Storage 'photos' bucket + photos table) ---
 
-/** A target's photos, newest first. */
+const BUCKET = 'photos'
+
+function publicUrl(path) {
+  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+}
+
+/** A target's photos, newest first, each with a public image URL. */
 export async function getPhotos(kind, id) {
-  const db = await getDB()
-  const photos = await db.getAllFromIndex('photos', 'targetKey', targetKey(kind, id))
-  return photos.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-}
-
-/** Store a (already-downscaled) photo Blob for a target. Returns the record. */
-export async function addPhoto(kind, id, blob) {
-  const photo = {
-    id: crypto.randomUUID(),
-    targetKind: kind,
-    targetId: id,
-    targetKey: targetKey(kind, id),
-    blob,
-    source: 'cole',
-    createdAt: new Date().toISOString(),
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('photos')
+    .select('*')
+    .eq('target_kind', kind)
+    .eq('target_id', id)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.warn('getPhotos failed:', error.message)
+    return []
   }
-  const db = await getDB()
-  await db.put('photos', photo)
-  if (navigator.storage?.persist) navigator.storage.persist().catch(() => {})
-  return photo
+  return data.map((p) => ({
+    id: p.id,
+    authorId: p.author_id,
+    storagePath: p.storage_path,
+    url: publicUrl(p.storage_path),
+  }))
 }
 
-/** Delete a photo by id. */
+/** Upload a (downscaled) photo Blob and record it (requires sign-in). */
+export async function addPhoto(kind, id, blob) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Sign in to add a photo.')
+  const photoId = crypto.randomUUID()
+  const path = `${user.id}/${photoId}.jpg`
+  const { error: upErr } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: 'image/jpeg', upsert: false })
+  if (upErr) throw upErr
+  const { error: insErr } = await supabase.from('photos').insert({
+    id: photoId,
+    author_id: user.id,
+    target_kind: kind,
+    target_id: id,
+    storage_path: path,
+  })
+  if (insErr) throw insErr
+}
+
+/** Delete one of your own photos: remove the file then the row (RLS-scoped). */
 export async function deletePhoto(photoId) {
-  const db = await getDB()
-  await db.delete('photos', photoId)
+  const { data } = await supabase.from('photos').select('storage_path').eq('id', photoId).single()
+  if (data?.storage_path) await supabase.storage.from(BUCKET).remove([data.storage_path])
+  const { error } = await supabase.from('photos').delete().eq('id', photoId)
+  if (error) throw error
 }

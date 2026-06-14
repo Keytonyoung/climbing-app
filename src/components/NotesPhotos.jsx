@@ -1,9 +1,9 @@
 // Reusable "beta" block for a route or wall: a shared timestamped NOTE THREAD
-// (everyone's notes, newest first) plus photo attachments. Dropped into both
-// RouteDetail and WallSheet. Notes are shared (Supabase); photos are still
-// local (IndexedDB) until Stage A4.
+// plus shared PHOTO attachments. Dropped into both RouteDetail and WallSheet.
+// Both notes and photos live in Supabase now (everyone reads; signed-in users
+// contribute; you can delete your own).
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { getNotes, addNote, deleteNote, getPhotos, addPhoto, deletePhoto } from '../data/notes'
 import { downscaleImage } from '../lib/image'
@@ -20,39 +20,19 @@ export default function NotesPhotos({ kind, id }) {
   const [savingNote, setSavingNote] = useState(false)
   const [noteError, setNoteError] = useState(null)
 
-  const [photos, setPhotos] = useState([]) // { id, url }
+  const [photos, setPhotos] = useState([]) // { id, url, authorId }
   const [busy, setBusy] = useState(false)
   const [viewer, setViewer] = useState(null)
   const [photoError, setPhotoError] = useState(null)
-  const urlsRef = useRef([])
 
   useEffect(() => {
     let alive = true
     getNotes(kind, id).then((rows) => alive && setNotes(rows))
-    loadPhotos(alive)
+    getPhotos(kind, id).then((rows) => alive && setPhotos(rows))
     return () => {
       alive = false
-      revokeUrls()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind, id])
-
-  function revokeUrls() {
-    urlsRef.current.forEach((u) => URL.revokeObjectURL(u))
-    urlsRef.current = []
-  }
-
-  async function loadPhotos(alive = true) {
-    const rows = await getPhotos(kind, id)
-    if (!alive) return
-    revokeUrls()
-    const withUrls = rows.map((p) => {
-      const url = URL.createObjectURL(p.blob)
-      urlsRef.current.push(url)
-      return { id: p.id, url }
-    })
-    setPhotos(withUrls)
-  }
 
   async function postNote() {
     if (!draft.trim()) return
@@ -83,7 +63,7 @@ export default function NotesPhotos({ kind, id }) {
     try {
       const blob = await downscaleImage(file)
       await addPhoto(kind, id, blob)
-      await loadPhotos()
+      setPhotos(await getPhotos(kind, id))
     } catch (err) {
       setPhotoError(`Couldn't add that photo: ${err.message || err}`)
     } finally {
@@ -94,7 +74,7 @@ export default function NotesPhotos({ kind, id }) {
   async function removePhoto(photoId) {
     await deletePhoto(photoId)
     setViewer(null)
-    await loadPhotos()
+    setPhotos(await getPhotos(kind, id))
   }
 
   return (
@@ -115,7 +95,7 @@ export default function NotesPhotos({ kind, id }) {
           </button>
         </div>
       ) : (
-        <p className="auth-intro">Sign in to add a note.</p>
+        <p className="auth-intro">Sign in to add notes or photos.</p>
       )}
       {noteError && <p className="place-error">{noteError}</p>}
 
@@ -144,29 +124,34 @@ export default function NotesPhotos({ kind, id }) {
       <div className="photo-grid">
         {photos.map((p) => (
           <button key={p.id} className="photo-thumb" onClick={() => setViewer(p)}>
-            <img src={p.url} alt="" />
+            <img src={p.url} alt="" loading="lazy" />
           </button>
         ))}
-        <label className={`photo-add ${busy ? 'is-busy' : ''}`}>
-          {busy ? '…' : '＋ Photo'}
-          <input
-            type="file"
-            accept="image/*"
-            className="visually-hidden"
-            disabled={busy}
-            onChange={onPickFile}
-          />
-        </label>
+        {user && (
+          <label className={`photo-add ${busy ? 'is-busy' : ''}`}>
+            {busy ? '…' : '＋ Photo'}
+            <input
+              type="file"
+              accept="image/*"
+              className="visually-hidden"
+              disabled={busy}
+              onChange={onPickFile}
+            />
+          </label>
+        )}
       </div>
+      {photos.length === 0 && !user && <p className="detail-desc muted">No photos yet.</p>}
       {photoError && <p className="place-error">{photoError}</p>}
 
       {viewer && (
         <div className="photo-viewer" onClick={() => setViewer(null)}>
           <img src={viewer.url} alt="" onClick={(e) => e.stopPropagation()} />
           <div className="photo-viewer-actions" onClick={(e) => e.stopPropagation()}>
-            <button className="pin-delete" onClick={() => removePhoto(viewer.id)}>
-              Delete photo
-            </button>
+            {user && viewer.authorId === user.id && (
+              <button className="pin-delete" onClick={() => removePhoto(viewer.id)}>
+                Delete photo
+              </button>
+            )}
             <button className="reset" onClick={() => setViewer(null)}>
               Close
             </button>
