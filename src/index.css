@@ -1,9 +1,38 @@
+/* Design tokens — "Desert Sandstone" (western-slope desert palette).
+   All app chrome pulls from these so the whole UI moves together. */
 :root {
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* palette */
+  --sand: #c8a06a;
+  --canyon: #b4441f; /* primary accent */
+  --canyon-dark: #8f3416;
+  --cream: #faf6ef; /* app background */
+  --espresso: #2b2118; /* primary text + dark header */
+  --espresso-soft: #6b5d4f; /* muted text */
+  --line: #e7decf; /* hairline borders */
+  --surface: #ffffff; /* cards / sheets */
+
+  /* semantic */
+  --color-bg: var(--cream);
+  --color-surface: var(--surface);
+  --color-text: var(--espresso);
+  --color-text-muted: var(--espresso-soft);
+  --color-line: var(--line);
+  --color-primary: var(--canyon);
+  --color-primary-contrast: #fff;
+  --color-header: var(--espresso);
+
+  /* shape */
+  --radius: 10px;
+  --radius-sm: 7px;
+  --shadow: 0 2px 8px rgba(43, 33, 24, 0.16);
+  --shadow-sheet: 0 -6px 24px rgba(43, 33, 24, 0.22);
+
+  --sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   font-family: var(--sans);
   font-size: 16px;
   line-height: 1.45;
-  color: #1a1a2e;
+  color: var(--color-text);
+  background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

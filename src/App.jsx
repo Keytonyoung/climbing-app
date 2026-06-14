@@ -174,7 +174,7 @@ export default function App() {
         source: 'walls',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': '#e94560',
+          'circle-color': '#b4441f',
           'circle-opacity': 0.85,
           'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30],
         },
@@ -196,7 +196,7 @@ export default function App() {
         source: 'walls',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-color': '#e94560',
+          'circle-color': '#b4441f',
           'circle-radius': 7,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
