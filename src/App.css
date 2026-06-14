@@ -264,6 +264,7 @@ html, body, #root {
 /* Notes & photos block (routes + walls) */
 .notes-photos {
   margin: 12px 0;
+  flex-shrink: 0;
 }
 .notes-photos h3 {
   font-size: 11px;
@@ -662,7 +663,7 @@ html, body, #root {
   list-style: none;
   margin: 0;
   padding: 0;
-  overflow-y: auto;
+  flex-shrink: 0; /* don't let flexbox collapse the list; the sheet scrolls */
 }
 .route-row {
   width: 100%;
@@ -738,7 +739,7 @@ html, body, #root {
   color: var(--color-text-muted);
 }
 .detail-section {
-  overflow-y: auto;
+  flex-shrink: 0;
   margin-bottom: 14px;
 }
 .detail-section h3 {
