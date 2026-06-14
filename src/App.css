@@ -30,38 +30,74 @@ html, body, #root {
 }
 
 #top-bar h1 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: var(--sand);
+  color: #eef2f5;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1; /* take the row; account button sits at the far right */
 }
 
-.filter-btn {
+/* Account / sign-in button (only button left in the header). */
+.account-btn {
+  flex-shrink: 0;
   font-size: 12px;
   font-weight: 600;
-  color: #f3ece0;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #eef2f5;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
-  padding: 6px 11px;
+  padding: 6px 12px;
+  min-width: 56px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 }
-.filter-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
+.account-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
-/* First button takes the slack, pushing the button group to the right. */
-.filter-btn:first-of-type {
-  margin-left: auto;
-}
-.filter-btn.active {
+.account-btn.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: #fff;
+}
+
+/* Bottom action bar — primary actions in the thumb zone (phone-first). */
+#action-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  box-shadow: 0 -2px 10px rgba(28, 37, 48, 0.1);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+}
+.action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.action-btn .action-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.action-btn.active {
+  color: var(--color-primary);
 }
 
 /* Trail recording panel */
@@ -168,7 +204,7 @@ html, body, #root {
 .basemap-btn {
   position: absolute;
   right: 12px;
-  bottom: 28px;
+  bottom: 74px;
   z-index: 1;
   font-size: 13px;
   font-weight: 600;
@@ -189,7 +225,7 @@ html, body, #root {
 .offline-btn {
   position: absolute;
   left: 12px;
-  bottom: 28px;
+  bottom: 74px;
   z-index: 1;
   font-size: 13px;
   font-weight: 600;
@@ -374,16 +410,24 @@ html, body, #root {
 }
 
 /* Filter panel */
+/* Filter / add-pin / track panels — anchored just above the bottom action bar
+   so they appear next to the buttons that open them (phone-first). */
 .filter-panel {
-  flex-shrink: 0;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-  padding: 12px 16px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 62px;
+  max-height: 55%;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  z-index: 1;
+  box-shadow: 0 -4px 16px rgba(28, 37, 48, 0.14);
+  z-index: 3;
+  animation: sheet-up 0.2s ease-out;
 }
 .filter-group {
   display: flex;
@@ -547,10 +591,10 @@ html, body, #root {
   right: 0;
   bottom: 0;
   max-height: 70%;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 16px 16px 0 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
-  z-index: 2;
+  box-shadow: 0 -4px 20px rgba(28, 37, 48, 0.28);
+  z-index: 5;
   display: flex;
   flex-direction: column;
   padding: 8px 16px 20px;

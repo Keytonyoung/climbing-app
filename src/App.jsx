@@ -112,8 +112,10 @@ export default function App() {
       style: 'https://tiles.openfreemap.org/styles/liberty',
       center: [GRAND_JUNCTION.lng, GRAND_JUNCTION.lat],
       zoom: INITIAL_ZOOM,
+      attributionControl: false, // re-added at top-right so the bottom bar can't cover it
     })
 
+    map.current.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right')
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right')
     map.current.addControl(
       new maplibregl.GeolocateControl({ trackUserLocation: true }),
@@ -174,7 +176,7 @@ export default function App() {
         source: 'walls',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': '#b4441f',
+          'circle-color': '#2e7d5b',
           'circle-opacity': 0.85,
           'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30],
         },
@@ -196,7 +198,7 @@ export default function App() {
         source: 'walls',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-color': '#b4441f',
+          'circle-color': '#2e7d5b',
           'circle-radius': 7,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
@@ -672,20 +674,8 @@ export default function App() {
     <div id="app">
       <header id="top-bar">
         <h1>Western Slope Climbing</h1>
-        <button className={`filter-btn ${filtered ? 'active' : ''}`} onClick={toggleFilter}>
-          Filter{filtered ? ' •' : ''}
-        </button>
-        <button className={`filter-btn ${adding ? 'active' : ''}`} onClick={toggleAdd}>
-          ＋ Pin
-        </button>
         <button
-          className={`filter-btn ${showTrack || recording ? 'active' : ''}`}
-          onClick={toggleTrack}
-        >
-          🥾 Trail
-        </button>
-        <button
-          className={`filter-btn account-btn ${user ? 'active' : ''}`}
+          className={`account-btn ${user ? 'active' : ''}`}
           onClick={() => setShowAuth(true)}
           title={user ? displayName(user) : 'Sign in'}
         >
@@ -737,6 +727,24 @@ export default function App() {
       >
         {satellite ? '🗺 Street' : '🛰 Satellite'}
       </button>
+
+      <nav id="action-bar">
+        <button className={`action-btn ${filtered ? 'active' : ''}`} onClick={toggleFilter}>
+          <span className="action-icon">⛃</span>
+          Filter{filtered ? ' •' : ''}
+        </button>
+        <button className={`action-btn ${adding ? 'active' : ''}`} onClick={toggleAdd}>
+          <span className="action-icon">＋</span>
+          Pin
+        </button>
+        <button
+          className={`action-btn ${showTrack || recording ? 'active' : ''}`}
+          onClick={toggleTrack}
+        >
+          <span className="action-icon">🥾</span>
+          Trail
+        </button>
+      </nav>
 
       {draft && (
         <PinEditSheet
