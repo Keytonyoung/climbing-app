@@ -7,7 +7,7 @@
 // these need connectivity.
 
 import { supabase } from './supabase'
-import { getCurrentUser } from './auth'
+import { getCurrentUser, getDisplayNames, displayName } from './auth'
 import { isOnline, cachePutAll, cacheGetAll, cachePut, cacheDelete, enqueue } from './sync'
 
 // Pin categories: the single source of truth for labels and map colors.
@@ -40,6 +40,7 @@ function rowToPin(r) {
     lng: r.lng,
     lat: r.lat,
     authorId: r.author_id,
+    authorName: r.author_name || null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   }
@@ -53,8 +54,11 @@ export async function getPins() {
       .select('*')
       .order('created_at', { ascending: false })
     if (!error) {
-      await cachePutAll('pins', data)
-      return data.map(rowToPin)
+      // Denormalize author names into the cache for offline attribution.
+      const names = await getDisplayNames(data.map((r) => r.author_id))
+      const rows = data.map((r) => ({ ...r, author_name: names[r.author_id] || 'a climber' }))
+      await cachePutAll('pins', rows)
+      return rows.map(rowToPin)
     }
     console.warn('getPins online failed, using cache:', error.message)
   }
@@ -78,14 +82,15 @@ export async function addPin({ category, label, notes, lng, lat }) {
     created_at: now,
     updated_at: now,
   }
-  await cachePut('pins', row) // optimistic — shows immediately
+  // Cache carries author_name for display; the DB row must not (no such column).
+  await cachePut('pins', { ...row, author_name: displayName(user) })
   if (isOnline() && supabase) {
     const { error } = await supabase.from('pins').insert(row)
     if (error) await enqueue({ table: 'pins', op: 'insert', payload: row })
   } else {
     await enqueue({ table: 'pins', op: 'insert', payload: row })
   }
-  return rowToPin(row)
+  return rowToPin({ ...row, author_name: displayName(user) })
 }
 
 /** Persist edits to a pin (only your own, per RLS). Returns the updated pin. */

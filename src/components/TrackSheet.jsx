@@ -3,7 +3,7 @@
 
 import { resolveAnchor, formatDistance } from '../data/tracks'
 
-export default function TrackSheet({ track, pins, onAnchorTap, onDelete, onClose }) {
+export default function TrackSheet({ track, pins, mine, onAnchorTap, onDelete, onClose }) {
   const coords = track.coordinates
   const start = resolveAnchor(track.start, pins, coords[0])
   const end = resolveAnchor(track.end, pins, coords[coords.length - 1])
@@ -44,11 +44,15 @@ export default function TrackSheet({ track, pins, onAnchorTap, onDelete, onClose
         </section>
       )}
 
-      <div className="pin-actions">
-        <button className="pin-delete" onClick={() => onDelete(track.id)}>
-          Delete
-        </button>
-      </div>
+      <footer className="detail-footer">Recorded by {track.authorName || 'a climber'}</footer>
+
+      {mine && (
+        <div className="pin-actions">
+          <button className="pin-delete" onClick={() => onDelete(track.id)}>
+            Delete
+          </button>
+        </div>
+      )}
     </div>
   )
 }

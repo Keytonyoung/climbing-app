@@ -875,6 +875,7 @@ export default function App() {
         <PinEditSheet
           pin={draft.pin}
           isNew={draft.isNew}
+          mine={draft.isNew || draft.pin.authorId === user?.id}
           onSave={savePin}
           onDelete={removePin}
           onCancel={cancelDraft}
@@ -892,6 +893,7 @@ export default function App() {
         <TrackSheet
           track={selectedTrack}
           pins={pins}
+          mine={selectedTrack.authorId === user?.id}
           onAnchorTap={handleAnchorTap}
           onDelete={removeTrack}
           onClose={() => setSelectedTrack(null)}

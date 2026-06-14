@@ -7,7 +7,7 @@
 // never leaves an unrenderable trail — resolveAnchor falls back to the geometry.
 
 import { supabase } from './supabase'
-import { getCurrentUser } from './auth'
+import { getCurrentUser, getDisplayNames, displayName } from './auth'
 import { getWalls } from './routes'
 import { isOnline, cachePutAll, cacheGetAll, cachePut, cacheDelete, enqueue } from './sync'
 
@@ -22,6 +22,7 @@ function rowToTrack(r) {
     coordinates: r.coordinates,
     lengthMeters: r.length_m,
     authorId: r.author_id,
+    authorName: r.author_name || null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   }
@@ -35,8 +36,10 @@ export async function getTracks() {
       .select('*')
       .order('created_at', { ascending: false })
     if (!error) {
-      await cachePutAll('tracks', data)
-      return data.map(rowToTrack)
+      const names = await getDisplayNames(data.map((r) => r.author_id))
+      const rows = data.map((r) => ({ ...r, author_name: names[r.author_id] || 'a climber' }))
+      await cachePutAll('tracks', rows)
+      return rows.map(rowToTrack)
     }
     console.warn('getTracks online failed, using cache:', error.message)
   }
@@ -61,14 +64,14 @@ export async function addTrack({ name, notes, start, end, coordinates }) {
     created_at: now,
     updated_at: now,
   }
-  await cachePut('tracks', row)
+  await cachePut('tracks', { ...row, author_name: displayName(user) })
   if (isOnline() && supabase) {
     const { error } = await supabase.from('tracks').insert(row)
     if (error) await enqueue({ table: 'tracks', op: 'insert', payload: row })
   } else {
     await enqueue({ table: 'tracks', op: 'insert', payload: row })
   }
-  return rowToTrack(row)
+  return rowToTrack({ ...row, author_name: displayName(user) })
 }
 
 /** Persist edits to a trail (only your own, per RLS). Returns the updated track. */

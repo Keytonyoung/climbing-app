@@ -15,6 +15,16 @@ function redirectTo() {
   return `${window.location.origin}${import.meta.env.BASE_URL}`
 }
 
+/** Resolve a set of user ids to { id: display_name }. */
+export async function getDisplayNames(ids) {
+  const map = {}
+  const unique = [...new Set(ids.filter(Boolean))]
+  if (!isSupabaseConfigured || !unique.length) return map
+  const { data } = await supabase.from('profiles').select('id, display_name').in('id', unique)
+  for (const p of data || []) map[p.id] = p.display_name
+  return map
+}
+
 /** Friendly name for a user (display_name, else the email's local part). */
 export function displayName(user) {
   if (!user) return ''
