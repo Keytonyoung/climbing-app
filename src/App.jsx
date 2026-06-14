@@ -79,6 +79,7 @@ export default function App() {
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
   const [dl, setDl] = useState(null) // offline-download state
+  const [satellite, setSatellite] = useState(false)
 
   const [ready, setReady] = useState(false)
   const [filter, setFilter] = useState(DEFAULT_FILTER)
@@ -121,6 +122,24 @@ export default function App() {
 
     map.current.on('load', () => {
       const m = map.current
+
+      // --- Satellite basemap (toggle; hidden by default) ---
+      // Added first so it sits above the street style but below our data layers.
+      // Online-only (Esri imagery); offline downloads stay on light street tiles.
+      m.addSource('satellite', {
+        type: 'raster',
+        tiles: [
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        ],
+        tileSize: 256,
+        attribution: 'Imagery © Esri, Maxar, Earthstar Geographics',
+      })
+      m.addLayer({
+        id: 'satellite',
+        type: 'raster',
+        source: 'satellite',
+        layout: { visibility: 'none' },
+      })
 
       // --- Climbing walls (OpenBeta seed) ---
       m.addSource('walls', {
@@ -596,6 +615,12 @@ export default function App() {
     armTap(false)
   }
 
+  function toggleSatellite() {
+    const next = !satellite
+    setSatellite(next)
+    map.current?.setLayoutProperty('satellite', 'visibility', next ? 'visible' : 'none')
+  }
+
   async function downloadThisArea() {
     if (!map.current || dl?.running) return
     setDl({ running: true, done: 0, total: 0 })
@@ -704,6 +729,13 @@ export default function App() {
         disabled={dl?.running}
       >
         {dlLabel}
+      </button>
+
+      <button
+        className={`basemap-btn ${satellite ? 'active' : ''}`}
+        onClick={toggleSatellite}
+      >
+        {satellite ? '🗺 Street' : '🛰 Satellite'}
       </button>
 
       {draft && (

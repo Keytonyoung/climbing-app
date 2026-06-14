@@ -153,6 +153,27 @@ html, body, #root {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Basemap (street/satellite) toggle */
+.basemap-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 28px;
+  z-index: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.basemap-btn.active {
+  color: #fff;
+  background: #1a1a2e;
+}
+
 /* "Save area offline" floating button */
 .offline-btn {
   position: absolute;
