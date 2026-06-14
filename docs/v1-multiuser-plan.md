@@ -135,6 +135,10 @@ offline and have it sync when back online. Both are identified users. Pro tier o
 
 - Moderation / approval dashboard (turning-point feature).
 - Stranger/public contribution (invite-only writes for now).
+- **Harden wall-location corrections at the scale turning point.** Corrections are
+  shipping now as *anyone-signed-in-can-edit, last-write-wins* (see §9). Once strangers
+  arrive, revisit with consensus/voting, edit history, or locking so a bad or malicious
+  move can't silently overwrite a good GPS fix.
 - Per-photo captions, user-created routes/walls (unless time allows), comment threading UI
   (the data model leaves room; the UI comes later).
 - Native app-store builds (Capacitor) — PWA install is enough.
@@ -167,3 +171,22 @@ climbs total (CA 36k, CO 30k…), so any broad/national expansion needs a differ
 **Effort:** moderate — mostly `routes.js` + an import script + a per-area cache path. The
 locked data-layer separation is what makes it contained. Cost: route text is small (~tens of
 MB) — fits Supabase Pro. Licensing: OpenBeta route text is CC0 (fine); never their photos.
+
+---
+
+## 9. Wall-location corrections (building now, 2026-06-13)
+
+**Why:** OpenBeta coordinates are imperfect (e.g. ~800 Unaweep walls share one fallback
+point). Fixing them makes crags findable. Corrections are a writable OVERRIDE layer over the
+read-only seed; routes inherit their wall's coords, so we correct WALLS only.
+
+- **`wall_overrides` table** (Supabase): `wall_id` (OpenBeta uuid, PK), `lng`, `lat`,
+  `author_id`, `updated_at`. RLS: world-read; any signed-in user may insert/update
+  (last-write-wins, attributed). Reset = delete the row.
+- **`src/data/overrides.js`**: `getOverrides()` (cached for offline), `setOverride(wallId,
+  lng, lat)`, `resetOverride(wallId)` — all through the Stage B cache/outbox so corrections
+  work offline and sync on reconnect.
+- **Merge in the data layer**: `getWallsGeoJSON(filter, overrides)` uses the corrected coord
+  when an override exists, else the seed coord. UI unchanged.
+- **UX**: WallSheet "Fix location" (signed-in) → reuse the pin-placement flow (use-my-
+  location / tap / drag, satellite helps) → save. Shows "moved by X" + "Reset to original".

@@ -105,20 +105,27 @@ export function getFilteredWalls(filter) {
  * one wall; the matching route list rides along in properties (stringified —
  * GeoJSON props must be primitives) so a click handler needs no lookup.
  */
-export function getWallsGeoJSON(filter) {
+export function getWallsGeoJSON(filter, overrides = {}) {
   return {
     type: 'FeatureCollection',
-    features: getFilteredWalls(filter).map((wall) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [wall.lng, wall.lat] },
-      properties: {
-        id: wall.id,
-        name: wall.name,
-        path: wall.path.join(' › '),
-        routeCount: wall.routes.length,
-        routes: JSON.stringify(wall.routes),
-      },
-    })),
+    features: getFilteredWalls(filter).map((wall) => {
+      const o = overrides[wall.id]
+      const lng = o ? o.lng : wall.lng
+      const lat = o ? o.lat : wall.lat
+      return {
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [lng, lat] },
+        properties: {
+          id: wall.id,
+          name: wall.name,
+          path: wall.path.join(' › '),
+          routeCount: wall.routes.length,
+          routes: JSON.stringify(wall.routes),
+          moved: o ? 1 : 0,
+          movedBy: o ? o.authorName || '' : '',
+        },
+      }
+    }),
   }
 }
 

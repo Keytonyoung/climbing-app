@@ -11,7 +11,16 @@ const TYPE_LABELS = {
   aid: 'Aid',
 }
 
-export default function WallSheet({ wall, tracks = [], onOpenTrack, onSelectRoute, onClose }) {
+export default function WallSheet({
+  wall,
+  tracks = [],
+  canEdit,
+  onOpenTrack,
+  onSelectRoute,
+  onFixLocation,
+  onResetLocation,
+  onClose,
+}) {
   return (
     <div className="sheet">
       <div className="sheet-handle" />
@@ -24,6 +33,22 @@ export default function WallSheet({ wall, tracks = [], onOpenTrack, onSelectRout
           ✕
         </button>
       </header>
+
+      <div className="wall-location">
+        {wall.moved ? (
+          <span className="wall-moved">📍 Location corrected{wall.movedBy ? ` by ${wall.movedBy}` : ''}</span>
+        ) : (
+          <span className="wall-moved muted">📍 OpenBeta location</span>
+        )}
+        {canEdit && (
+          <span className="wall-location-actions">
+            <button className="link-btn" onClick={() => onFixLocation(wall)}>Fix location</button>
+            {wall.moved && (
+              <button className="link-btn" onClick={() => onResetLocation(wall.id)}>Reset</button>
+            )}
+          </span>
+        )}
+      </div>
 
       {tracks.length > 0 && (
         <div className="wall-tracks">

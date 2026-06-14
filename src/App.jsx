@@ -30,6 +30,7 @@ import {
 import { useAuth } from './auth/AuthContext'
 import { displayName } from './data/auth'
 import { initSync } from './data/sync'
+import { getOverrides, setOverride, resetOverride } from './data/overrides'
 import { downloadArea } from './lib/tiles'
 import AuthSheet from './components/AuthSheet'
 import FilterPanel from './components/FilterPanel'
@@ -105,6 +106,8 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false)
   const [dl, setDl] = useState(null) // offline-download state
   const [satellite, setSatellite] = useState(false)
+  const [overrides, setOverrides] = useState({}) // wallId -> corrected coords
+  const [locating, setLocating] = useState(null) // { wallId, name, lng, lat } while fixing a wall
 
   const [ready, setReady] = useState(false)
   const [filter, setFilter] = useState(DEFAULT_FILTER)
@@ -275,6 +278,10 @@ export default function App() {
           name: f.properties.name,
           path: f.properties.path,
           routes: JSON.parse(f.properties.routes),
+          lng: f.geometry.coordinates[0],
+          lat: f.geometry.coordinates[1],
+          moved: !!f.properties.moved,
+          movedBy: f.properties.movedBy,
         })
         setSelectedRoute(null)
       })
@@ -321,6 +328,7 @@ export default function App() {
       // Load saved data.
       getPins().then(setPins)
       getTracks().then(setTracks)
+      getOverrides().then(setOverrides)
     })
   }, [])
 
@@ -335,18 +343,19 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
-  // Push filter changes to the walls source.
+  // Push filter / location-correction changes to the walls source.
   useEffect(() => {
     if (!ready) return
     const source = map.current.getSource('walls')
-    if (source) source.setData(getWallsGeoJSON(filter))
-  }, [filter, ready])
+    if (source) source.setData(getWallsGeoJSON(filter, overrides))
+  }, [filter, overrides, ready])
 
   // Flush offline-queued writes on reconnect, then refresh shared data.
   useEffect(() => {
     return initSync(async () => {
       setPins(await getPins())
       setTracks(await getTracks())
+      setOverrides(await getOverrides())
     })
   }, [])
 
@@ -423,6 +432,69 @@ export default function App() {
     closeSheets()
     showMarker(pin)
     setDraft({ pin: { ...pin }, isNew: false })
+  }
+
+  // --- Fix wall location (corrections layer) ---
+
+  function showFixMarker(lng, lat) {
+    if (markerRef.current) markerRef.current.remove()
+    const mk = new maplibregl.Marker({ draggable: true, color: '#2e7d5b' })
+      .setLngLat([lng, lat])
+      .addTo(map.current)
+    mk.on('dragend', () => {
+      const ll = mk.getLngLat()
+      setLocating((l) => (l ? { ...l, lng: ll.lng, lat: ll.lat } : l))
+    })
+    markerRef.current = mk
+  }
+
+  function startFixLocation(wall) {
+    closeSheets()
+    showFixMarker(wall.lng, wall.lat)
+    setLocating({ wallId: wall.id, name: wall.name, lng: wall.lng, lat: wall.lat })
+    map.current?.easeTo({ center: [wall.lng, wall.lat], zoom: Math.max(map.current.getZoom(), 15) })
+  }
+
+  function fixUseMyLocation() {
+    if (!navigator.geolocation) return setGeoError('This device has no location support.')
+    setGeoError(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { longitude: lng, latitude: lat } = pos.coords
+        setLocating((l) => (l ? { ...l, lng, lat } : l))
+        markerRef.current?.setLngLat([lng, lat])
+        map.current?.easeTo({ center: [lng, lat] })
+      },
+      (err) => setGeoError(`Could not get your location: ${err.message}`),
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  async function saveFixLocation() {
+    try {
+      await setOverride(locating.wallId, locating.lng, locating.lat)
+      setOverrides(await getOverrides())
+    } catch (e) {
+      alert(`Couldn't save location: ${e.message || e}`)
+    } finally {
+      clearMarker()
+      setLocating(null)
+    }
+  }
+
+  function cancelFixLocation() {
+    clearMarker()
+    setLocating(null)
+  }
+
+  async function resetWallLocation(wallId) {
+    try {
+      await resetOverride(wallId)
+      setOverrides(await getOverrides())
+    } catch (e) {
+      alert(`Couldn't reset location: ${e.message || e}`)
+    }
+    closeSheets()
   }
 
   async function savePin(merged) {
@@ -736,6 +808,20 @@ export default function App() {
           geoError={geoError}
         />
       )}
+      {locating && (
+        <div className="filter-panel">
+          <div className="filter-group">
+            <span className="filter-label">Fix location — {locating.name}</span>
+            <p className="record-hint">Drag the green pin onto the wall, or use your location if you're there.</p>
+          </div>
+          <div className="place-actions">
+            <button className="place-btn primary" onClick={fixUseMyLocation}>📍 Use my location</button>
+            <button className="place-btn" onClick={saveFixLocation}>Save location</button>
+            <button className="reset" onClick={cancelFixLocation}>Cancel</button>
+          </div>
+          {geoError && <p className="place-error">{geoError}</p>}
+        </div>
+      )}
       {(showTrack || recording) && (
         <TrackRecordPanel
           recording={recording}
@@ -823,8 +909,11 @@ export default function App() {
         <WallSheet
           wall={selectedWall}
           tracks={wallTracks}
+          canEdit={!!user}
           onOpenTrack={openWallTrack}
           onSelectRoute={setSelectedRoute}
+          onFixLocation={startFixLocation}
+          onResetLocation={resetWallLocation}
           onClose={closeSheets}
         />
       )}

@@ -118,6 +118,29 @@ begin
 end $$;
 
 -- =========================================================================
+-- wall_overrides: corrected coordinates for OpenBeta walls (the seed data is
+-- read-only, so fixes live here, overlaid at render time). One row per wall;
+-- any signed-in user may set/replace it (last-write-wins, attributed). Reset =
+-- delete the row. (Hardening — consensus/locking — is a turning-point task.)
+-- =========================================================================
+create table if not exists public.wall_overrides (
+  wall_id    text primary key,         -- OpenBeta wall uuid
+  lng        double precision not null,
+  lat        double precision not null,
+  author_id  uuid not null references auth.users (id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+alter table public.wall_overrides enable row level security;
+create policy "wall_overrides read"   on public.wall_overrides for select using (true);
+create policy "wall_overrides insert" on public.wall_overrides for insert
+  with check (auth.role() = 'authenticated' and auth.uid() = author_id);
+-- Any signed-in user may overwrite anyone's correction (last-write-wins).
+create policy "wall_overrides update" on public.wall_overrides for update
+  using (auth.role() = 'authenticated');
+create policy "wall_overrides delete" on public.wall_overrides for delete
+  using (auth.role() = 'authenticated');
+
+-- =========================================================================
 -- Storage bucket for photos (public read). If the bucket already exists this
 -- is a no-op. Object-level write rules are added in the runbook via the
 -- dashboard, or uncomment the policies below.

@@ -6,7 +6,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 4
+const DB_VERSION = 5
 
 let dbPromise = null
 
@@ -34,6 +34,10 @@ export function getDB() {
         // The pins/tracks/notes stores above are reused as the read cache.
         if (oldVersion < 4) {
           db.createObjectStore('outbox', { keyPath: 'id' })
+        }
+        // v5: cache of wall-location corrections (keyed by OpenBeta wall id).
+        if (oldVersion < 5) {
+          db.createObjectStore('overrides', { keyPath: 'wall_id' })
         }
       },
     })

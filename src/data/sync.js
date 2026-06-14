@@ -95,7 +95,10 @@ async function applyOp({ table, op, payload }) {
     const { error } = await supabase.from(table).update(payload.changes).eq('id', payload.id)
     if (error) throw error
   } else if (op === 'delete') {
-    const { error } = await supabase.from(table).delete().eq('id', payload.id)
+    // payload may target a non-'id' key column (e.g. wall_overrides.wall_id).
+    const col = payload.column || 'id'
+    const val = payload.value ?? payload.id
+    const { error } = await supabase.from(table).delete().eq(col, val)
     if (error) throw error
   }
 }
