@@ -235,8 +235,15 @@ export default function App() {
 
       // General click: only acts when armed for tap-to-place.
       m.on('click', (e) => {
-        if (!modeRef.current.tapArmed) return
-        placeDraftAt(e.lngLat.lng, e.lngLat.lat)
+        if (modeRef.current.tapArmed) {
+          placeDraftAt(e.lngLat.lng, e.lngLat.lat)
+          return
+        }
+        // Tap on empty map (no pin/wall/trail) closes any open sheet.
+        const hits = m.queryRenderedFeatures(e.point, {
+          layers: ['clusters', 'wall', 'pin', 'track'],
+        })
+        if (hits.length === 0) dismissOpenSheets()
       })
 
       for (const layer of ['clusters', 'wall', 'pin', 'track']) {
@@ -622,6 +629,16 @@ export default function App() {
     setSelectedWall(null)
     setSelectedRoute(null)
     setSelectedTrack(null)
+  }
+
+  // Tapping empty map dismisses any open view/edit sheet. Only setters/refs so
+  // it's safe to call from the map click handler captured at mount.
+  function dismissOpenSheets() {
+    setSelectedWall(null)
+    setSelectedRoute(null)
+    setSelectedTrack(null)
+    clearMarker()
+    setDraft(null)
   }
 
   const wallTracks = selectedWall ? getTracksForWall(selectedWall.id, tracks) : []
