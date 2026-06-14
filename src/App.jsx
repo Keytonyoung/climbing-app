@@ -46,13 +46,38 @@ import './App.css'
 const GRAND_JUNCTION = { lng: -108.5506, lat: 39.0639 }
 const INITIAL_ZOOM = 9
 
-// Category -> color as a MapLibre data-driven expression (built from CATEGORIES).
-const PIN_COLOR_EXPR = [
-  'match',
-  ['get', 'category'],
-  ...CATEGORIES.flatMap((c) => [c.key, c.color]),
-  '#7c3aed', // fallback
-]
+// Draw a teardrop map-pin icon (colored head, white outline + center dot) as
+// pixel data for map.addImage. Categories each get their own colored pin.
+function pinIconData(hex) {
+  const w = 48
+  const h = 60
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  const cx = 24
+  const cy = 22
+  const drop = (r, tipY) => {
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(cx - r * 0.62, cy + r * 0.5)
+    ctx.lineTo(cx + r * 0.62, cy + r * 0.5)
+    ctx.lineTo(cx, tipY)
+    ctx.closePath()
+    ctx.fill()
+  }
+  ctx.fillStyle = '#ffffff'
+  drop(20, 59) // white outline
+  ctx.fillStyle = hex
+  drop(17, 55) // colored body
+  ctx.beginPath()
+  ctx.arc(cx, cy, 6, 0, 2 * Math.PI)
+  ctx.fillStyle = '#ffffff'
+  ctx.fill()
+  return ctx.getImageData(0, 0, w, h)
+}
 
 const EMPTY_FC = { type: 'FeatureCollection', features: [] }
 
@@ -206,17 +231,31 @@ export default function App() {
       })
 
       // --- Personal pins (Cole's data) ---
+      // One teardrop icon per category, then a symbol layer keyed by category.
+      for (const c of CATEGORIES) {
+        if (!m.hasImage(`pin-${c.key}`)) {
+          m.addImage(`pin-${c.key}`, pinIconData(c.color), { pixelRatio: 2 })
+        }
+      }
       m.addSource('pins', { type: 'geojson', data: getPinsGeoJSON([]) })
       m.addLayer({
         id: 'pin',
+        type: 'symbol',
+        source: 'pins',
+        layout: {
+          'icon-image': ['concat', 'pin-', ['get', 'category']],
+          'icon-size': 1,
+          'icon-anchor': 'bottom',
+          'icon-allow-overlap': true,
+        },
+      })
+      // Transparent, generous tap target over each pin (the icon's own hit box
+      // is tiny). Clicks/cursor use this layer.
+      m.addLayer({
+        id: 'pin-hit',
         type: 'circle',
         source: 'pins',
-        paint: {
-          'circle-color': PIN_COLOR_EXPR,
-          'circle-radius': 9,
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#ffffff',
-        },
+        paint: { 'circle-radius': 16, 'circle-color': '#000', 'circle-opacity': 0 },
       })
 
       m.on('click', 'clusters', async (e) => {
@@ -240,7 +279,7 @@ export default function App() {
         setSelectedRoute(null)
       })
 
-      m.on('click', 'pin', (e) => {
+      m.on('click', 'pin-hit', (e) => {
         if (modeRef.current.tapArmed || modeRef.current.recording) return
         const id = e.features[0].properties.id
         const pin = pinsRef.current.find((p) => p.id === id)
@@ -262,12 +301,12 @@ export default function App() {
         }
         // Tap on empty map (no pin/wall/trail) closes any open sheet.
         const hits = m.queryRenderedFeatures(e.point, {
-          layers: ['clusters', 'wall', 'pin', 'track'],
+          layers: ['clusters', 'wall', 'pin-hit', 'track'],
         })
         if (hits.length === 0) dismissOpenSheets()
       })
 
-      for (const layer of ['clusters', 'wall', 'pin', 'track']) {
+      for (const layer of ['clusters', 'wall', 'pin-hit', 'track']) {
         m.on('mouseenter', layer, () => {
           if (!modeRef.current.tapArmed) m.getCanvas().style.cursor = 'pointer'
         })
