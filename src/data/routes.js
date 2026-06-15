@@ -129,6 +129,35 @@ export function getWallsGeoJSON(filter, overrides = {}) {
   }
 }
 
+/**
+ * Search walls and routes by name. Returns up to `limit` results, each with the
+ * wall id (and route id for route matches) so the UI can open it via deep link.
+ */
+export function searchWallsAndRoutes(query, limit = 25) {
+  const q = query.trim().toLowerCase()
+  if (q.length < 2) return []
+  const out = []
+  for (const wall of seed.walls) {
+    if (wall.name.toLowerCase().includes(q)) {
+      out.push({ kind: 'wall', wallId: wall.id, title: wall.name, subtitle: wall.path.join(' › ') })
+      if (out.length >= limit) return out
+    }
+    for (const r of wall.routes) {
+      if (r.name.toLowerCase().includes(q)) {
+        out.push({
+          kind: 'route',
+          wallId: wall.id,
+          routeId: r.id,
+          title: r.name,
+          subtitle: `${r.grade ? r.grade + ' · ' : ''}${wall.name}`,
+        })
+        if (out.length >= limit) return out
+      }
+    }
+  }
+  return out
+}
+
 /** Wall + route totals for the current filter (for the result count). */
 export function getFilteredCounts(filter) {
   const walls = getFilteredWalls(filter)

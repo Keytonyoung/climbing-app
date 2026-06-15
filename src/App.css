@@ -650,6 +650,20 @@ html, body, #root {
   cursor: pointer;
   padding: 0;
 }
+/* Search */
+.search-sheet .sheet-header .pin-input {
+  flex: 1;
+}
+.search-sub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 0 6px 4px;
+  margin-top: -2px;
+}
+.route-row .route-type {
+  text-transform: capitalize;
+}
+
 /* Toast (transient messages, replaces alert) */
 .toast {
   position: fixed;

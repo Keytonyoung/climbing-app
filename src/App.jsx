@@ -35,6 +35,7 @@ import { getOverrides, setOverride, resetOverride } from './data/overrides'
 import { downloadArea } from './lib/tiles'
 import AuthSheet from './components/AuthSheet'
 import WelcomeOverlay from './components/WelcomeOverlay'
+import SearchSheet from './components/SearchSheet'
 import FilterPanel from './components/FilterPanel'
 import WallSheet from './components/WallSheet'
 import RouteDetail from './components/RouteDetail'
@@ -108,6 +109,7 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('welcomed'))
   const [toast, setToast] = useState(null)
+  const [showSearch, setShowSearch] = useState(false)
   const [dl, setDl] = useState(null) // offline-download state
   const [satellite, setSatellite] = useState(false)
   const [overrides, setOverrides] = useState({}) // wallId -> corrected coords
@@ -832,6 +834,14 @@ export default function App() {
       <header id="top-bar">
         <h1>Western Slope Climbing</h1>
         <button
+          className="account-btn"
+          onClick={() => setShowSearch(true)}
+          title="Search"
+          aria-label="Search"
+        >
+          🔍
+        </button>
+        <button
           className={`account-btn ${user ? 'active' : ''}`}
           onClick={() => setShowAuth(true)}
           title={user ? displayName(user) : 'Sign in'}
@@ -963,6 +973,16 @@ export default function App() {
           onFixLocation={startFixLocation}
           onResetLocation={resetWallLocation}
           onClose={closeSheets}
+        />
+      )}
+
+      {showSearch && (
+        <SearchSheet
+          onPick={(r) => {
+            setShowSearch(false)
+            openWallById(r.wallId, r.routeId)
+          }}
+          onClose={() => setShowSearch(false)}
         />
       )}
 
