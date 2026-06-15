@@ -33,6 +33,7 @@ import { initSync } from './data/sync'
 import { getOverrides, setOverride, resetOverride } from './data/overrides'
 import { downloadArea } from './lib/tiles'
 import AuthSheet from './components/AuthSheet'
+import WelcomeOverlay from './components/WelcomeOverlay'
 import FilterPanel from './components/FilterPanel'
 import WallSheet from './components/WallSheet'
 import RouteDetail from './components/RouteDetail'
@@ -104,6 +105,7 @@ export default function App() {
 
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('welcomed'))
   const [dl, setDl] = useState(null) // offline-download state
   const [satellite, setSatellite] = useState(false)
   const [overrides, setOverrides] = useState({}) // wallId -> corrected coords
@@ -921,6 +923,15 @@ export default function App() {
       )}
 
       {showAuth && <AuthSheet onClose={() => setShowAuth(false)} />}
+
+      {showWelcome && (
+        <WelcomeOverlay
+          onDismiss={() => {
+            localStorage.setItem('welcomed', '1')
+            setShowWelcome(false)
+          }}
+        />
+      )}
     </div>
   )
 }

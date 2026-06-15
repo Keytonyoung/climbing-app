@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import { CATEGORIES, categoryLabel } from '../data/pins'
+import { openDirections } from '../lib/directions'
 
 export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCancel }) {
   const [category, setCategory] = useState(pin.category)
@@ -24,6 +25,9 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
           <span className="badge">{categoryLabel(pin.category)}</span>
         </div>
         {pin.notes && <p className="detail-desc">{pin.notes}</p>}
+        <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
+          🧭 Directions
+        </button>
         <footer className="detail-footer">Added by {pin.authorName || 'a climber'}</footer>
       </div>
     )
@@ -76,6 +80,12 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
           onChange={(e) => setNotes(e.target.value)}
         />
       </div>
+
+      {!isNew && (
+        <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
+          🧭 Directions
+        </button>
+      )}
 
       <div className="pin-actions">
         {!isNew && (

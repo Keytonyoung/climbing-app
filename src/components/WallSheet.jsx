@@ -2,6 +2,7 @@
 // detail view.
 
 import NotesPhotos from './NotesPhotos'
+import { openDirections } from '../lib/directions'
 
 const TYPE_LABELS = {
   sport: 'Sport',
@@ -33,6 +34,10 @@ export default function WallSheet({
           ✕
         </button>
       </header>
+
+      <button className="directions-btn" onClick={() => openDirections(wall.lat, wall.lng)}>
+        🧭 Directions
+      </button>
 
       <div className="wall-location">
         {wall.moved ? (
