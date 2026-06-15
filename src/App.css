@@ -650,6 +650,23 @@ html, body, #root {
   cursor: pointer;
   padding: 0;
 }
+/* Toast (transient messages, replaces alert) */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  z-index: 15;
+  max-width: 90%;
+  background: var(--color-text);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
 /* First-run welcome / disclaimer */
 .welcome-overlay {
   position: fixed;

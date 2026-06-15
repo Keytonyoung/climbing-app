@@ -29,7 +29,9 @@ export async function downloadArea(map, { extraZoom = 2, maxTiles = 1500, onProg
   const templates = []
   for (const id of Object.keys(style.sources || {})) {
     const src = map.getSource(id)
-    if (src?.tiles?.length) templates.push(...src.tiles)
+    // Only the vector basemap — skip the low-zoom raster (404s at crag zooms)
+    // and the satellite layer (huge; intentionally online-only).
+    if (src?.type === 'vector' && src?.tiles?.length) templates.push(...src.tiles)
   }
   if (!templates.length) throw new Error('No downloadable tile source found.')
 

@@ -107,6 +107,7 @@ export default function App() {
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('welcomed'))
+  const [toast, setToast] = useState(null)
   const [dl, setDl] = useState(null) // offline-download state
   const [satellite, setSatellite] = useState(false)
   const [overrides, setOverrides] = useState({}) // wallId -> corrected coords
@@ -220,6 +221,7 @@ export default function App() {
         layout: {
           'text-field': ['get', 'point_count_abbreviated'],
           'text-size': 13,
+          'text-font': ['Noto Sans Regular'], // served by OpenFreeMap (avoids 404 fallback)
         },
         paint: { 'text-color': '#ffffff' },
       })
@@ -492,7 +494,7 @@ export default function App() {
       await setOverride(locating.wallId, locating.lng, locating.lat)
       setOverrides(await getOverrides())
     } catch (e) {
-      alert(`Couldn't save location: ${e.message || e}`)
+      showToast(`Couldn't save location: ${e.message || e}`)
     } finally {
       clearMarker()
       setLocating(null)
@@ -509,7 +511,7 @@ export default function App() {
       await resetOverride(wallId)
       setOverrides(await getOverrides())
     } catch (e) {
-      alert(`Couldn't reset location: ${e.message || e}`)
+      showToast(`Couldn't reset location: ${e.message || e}`)
     }
     closeSheets()
   }
@@ -525,7 +527,7 @@ export default function App() {
       clearMarker()
       setDraft(null)
     } catch (e) {
-      alert(`Could not save pin: ${e.message || e}`)
+      showToast(`Could not save pin: ${e.message || e}`)
     }
   }
 
@@ -670,7 +672,7 @@ export default function App() {
       setTracks(await getTracks())
       setSaveDraft(null)
     } catch (e) {
-      alert(`Could not save trail: ${e.message || e}`)
+      showToast(`Could not save trail: ${e.message || e}`)
     }
   }
 
@@ -762,7 +764,7 @@ export default function App() {
       setTimeout(() => setDl(null), 3000)
     } catch (e) {
       setDl(null)
-      alert(`Couldn't save this area: ${e.message || e}`)
+      showToast(`Couldn't save this area: ${e.message || e}`)
     }
   }
 
@@ -778,6 +780,11 @@ export default function App() {
   const handleFilterChange = (next) => {
     setFilter(next)
     closeSheets()
+  }
+
+  function showToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast((t) => (t === msg ? null : t)), 3000)
   }
 
   function closeSheets() {
@@ -960,6 +967,8 @@ export default function App() {
       )}
 
       {showAuth && <AuthSheet onClose={() => setShowAuth(false)} />}
+
+      {toast && <div className="toast">{toast}</div>}
 
       {showWelcome && (
         <WelcomeOverlay
