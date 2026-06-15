@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {
+  getWall,
   getWallsGeoJSON,
   getFilteredCounts,
   isDefaultFilter,
@@ -360,6 +361,20 @@ export default function App() {
       setOverrides(await getOverrides())
     })
   }, [])
+
+  // Open a shared deep link (?wall=&route=) once the map is ready, then clean the URL.
+  const deepLinkDone = useRef(false)
+  useEffect(() => {
+    if (!ready || deepLinkDone.current) return
+    deepLinkDone.current = true
+    const p = new URLSearchParams(location.search)
+    const wallId = p.get('wall')
+    if (wallId) {
+      openWallById(wallId, p.get('route'))
+      history.replaceState(null, '', location.pathname)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready])
 
   // Push pin changes to the pins source; keep the ref in sync for click handlers.
   useEffect(() => {
@@ -769,6 +784,28 @@ export default function App() {
     setSelectedWall(null)
     setSelectedRoute(null)
     setSelectedTrack(null)
+  }
+
+  // Open a wall (and optionally a route) by id — used by shared deep links.
+  function openWallById(wallId, routeId) {
+    const w = getWall(wallId)
+    if (!w) return
+    const o = overrides[wallId]
+    const lng = o ? o.lng : w.lng
+    const lat = o ? o.lat : w.lat
+    setSelectedTrack(null)
+    setSelectedWall({
+      id: w.id,
+      name: w.name,
+      path: w.path.join(' › '),
+      routes: w.routes,
+      lng,
+      lat,
+      moved: !!o,
+      movedBy: o?.authorName || '',
+    })
+    setSelectedRoute(routeId ? w.routes.find((r) => r.id === routeId) || null : null)
+    map.current?.flyTo({ center: [lng, lat], zoom: Math.max(map.current.getZoom(), 15) })
   }
 
   // Tapping empty map dismisses any open view/edit sheet. Only setters/refs so

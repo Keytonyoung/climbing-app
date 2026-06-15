@@ -1,7 +1,9 @@
 // Full detail view for a single route. Shown as a bottom sheet over the map.
 // Only displays sourced data — never auto-generated safety info (CLAUDE.md §8).
 
+import { useState } from 'react'
 import NotesPhotos from './NotesPhotos'
+import { shareUrl, shareOrCopy } from '../lib/share'
 
 const TYPE_LABELS = {
   sport: 'Sport',
@@ -18,6 +20,14 @@ const SOURCE_LABELS = {
 
 export default function RouteDetail({ route, wall, onBack, onClose }) {
   const scale = route.type === 'boulder' ? 'V-scale' : 'YDS'
+  const [copied, setCopied] = useState(false)
+  async function share() {
+    const res = await shareOrCopy(shareUrl({ wallId: wall.id, routeId: route.id }), route.name)
+    if (res === 'copied') {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   return (
     <div className="sheet">
@@ -38,6 +48,10 @@ export default function RouteDetail({ route, wall, onBack, onClose }) {
         <span className="badge">{TYPE_LABELS[route.type] || route.type}</span>
         {route.grade && <span className="badge-scale">{scale}</span>}
       </div>
+
+      <button className="directions-btn" onClick={share}>
+        {copied ? '✓ Link copied' : '🔗 Share route'}
+      </button>
 
       {route.description && (
         <section className="detail-section">

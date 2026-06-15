@@ -1,8 +1,10 @@
 // Bottom sheet listing the routes on a tapped wall. Tap a route to open its
 // detail view.
 
+import { useState } from 'react'
 import NotesPhotos from './NotesPhotos'
 import { openDirections } from '../lib/directions'
+import { shareUrl, shareOrCopy } from '../lib/share'
 
 const TYPE_LABELS = {
   sport: 'Sport',
@@ -22,6 +24,15 @@ export default function WallSheet({
   onResetLocation,
   onClose,
 }) {
+  const [copied, setCopied] = useState(false)
+  async function share() {
+    const res = await shareOrCopy(shareUrl({ wallId: wall.id }), wall.name)
+    if (res === 'copied') {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   return (
     <div className="sheet">
       <div className="sheet-handle" />
@@ -35,9 +46,14 @@ export default function WallSheet({
         </button>
       </header>
 
-      <button className="directions-btn" onClick={() => openDirections(wall.lat, wall.lng)}>
-        🧭 Directions
-      </button>
+      <div className="sheet-actions">
+        <button className="directions-btn" onClick={() => openDirections(wall.lat, wall.lng)}>
+          🧭 Directions
+        </button>
+        <button className="directions-btn" onClick={share}>
+          {copied ? '✓ Link copied' : '🔗 Share'}
+        </button>
+      </div>
 
       <div className="wall-location">
         {wall.moved ? (

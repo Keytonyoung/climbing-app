@@ -716,6 +716,15 @@ html, body, #root {
   cursor: pointer;
 }
 
+.sheet-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sheet-actions .directions-btn {
+  margin: 10px 0 2px;
+}
+
 .directions-btn {
   display: inline-flex;
   align-items: center;
