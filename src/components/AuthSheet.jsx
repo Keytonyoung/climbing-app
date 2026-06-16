@@ -49,8 +49,8 @@ export default function AuthSheet({ onClose, onShowHelp }) {
   }
 
   return (
-    <div className="sheet" {...dismiss}>
-      <div className="sheet-handle" />
+    <div className="sheet" style={dismiss.style}>
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <h2>{user ? 'Account' : 'Sign in to contribute'}</h2>
         <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>

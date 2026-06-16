@@ -15,8 +15,8 @@ export default function SearchSheet({ onPick, onClose }) {
   }, [])
 
   return (
-    <div className="sheet search-sheet" {...dismiss}>
-      <div className="sheet-handle" />
+    <div className="sheet search-sheet" style={dismiss.style}>
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <input
           ref={inputRef}

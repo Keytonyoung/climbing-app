@@ -33,6 +33,7 @@ import { displayName } from './data/auth'
 import { initSync } from './data/sync'
 import { getOverrides, setOverride, resetOverride } from './data/overrides'
 import { downloadArea } from './lib/tiles'
+import { useSheetDismiss } from './lib/useSheetDismiss'
 import AuthSheet from './components/AuthSheet'
 import WelcomeOverlay from './components/WelcomeOverlay'
 import SearchSheet from './components/SearchSheet'
@@ -793,6 +794,7 @@ export default function App() {
 
   const counts = getFilteredCounts(filter)
   const filtered = !isDefaultFilter(filter)
+  const fixDismiss = useSheetDismiss(cancelFixLocation)
 
   const handleFilterChange = (next) => {
     setFilter(next)
@@ -886,8 +888,8 @@ export default function App() {
         />
       )}
       {locating && (
-        <div className="sheet">
-          <div className="sheet-handle" />
+        <div className="sheet" style={fixDismiss.style}>
+          <div className="sheet-handle" {...fixDismiss.handleProps} />
           <header className="sheet-header">
             <h2>Fix location — {locating.name}</h2>
             <button className="sheet-close" onClick={cancelFixLocation} aria-label="Close">✕</button>

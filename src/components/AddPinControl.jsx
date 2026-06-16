@@ -17,8 +17,8 @@ export default function AddPinControl({
 }) {
   const dismiss = useSheetDismiss(onClose)
   return (
-    <div className="sheet" {...dismiss}>
-      <div className="sheet-handle" />
+    <div className="sheet" style={dismiss.style}>
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <h2>Add a pin</h2>
         <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>

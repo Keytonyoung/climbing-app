@@ -17,8 +17,8 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
 
   if (!editable) {
     return (
-      <div className="sheet" {...dismiss}>
-        <div className="sheet-handle" />
+      <div className="sheet" style={dismiss.style}>
+        <div className="sheet-handle" {...dismiss.handleProps} />
         <header className="sheet-header">
           <h2>{pin.label || categoryLabel(pin.category)}</h2>
           <button className="sheet-close" onClick={onCancel} aria-label="Close">✕</button>
@@ -36,8 +36,8 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
   }
 
   return (
-    <div className="sheet" {...dismiss}>
-      <div className="sheet-handle" />
+    <div className="sheet" style={dismiss.style}>
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <h2>{isNew ? 'New pin' : 'Edit pin'}</h2>
         <button className="sheet-close" onClick={onCancel} aria-label="Cancel">

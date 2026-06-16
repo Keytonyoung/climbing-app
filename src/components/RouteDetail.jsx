@@ -32,8 +32,8 @@ export default function RouteDetail({ route, wall, onBack, onClose }) {
   }
 
   return (
-    <div className="sheet" {...dismiss}>
-      <div className="sheet-handle" />
+    <div className="sheet" style={dismiss.style}>
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <button className="sheet-back" onClick={onBack}>
           ‹ {wall.name}

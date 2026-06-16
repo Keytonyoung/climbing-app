@@ -11,8 +11,8 @@ export default function TrackSheet({ track, pins, mine, onAnchorTap, onDelete, o
   const dismiss = useSheetDismiss(onClose)
 
   return (
-    <div className="sheet" {...dismiss}>
-      <div className="sheet-handle" />
+    <div className="sheet" style={dismiss.style}>
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <div>
           <h2>{track.name || 'Unnamed trail'}</h2>

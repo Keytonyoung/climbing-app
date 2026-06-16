@@ -1,46 +1,58 @@
-// Swipe/drag-down-to-dismiss for bottom sheets. Spread the returned props onto
-// the `.sheet` element: <div className="sheet" {...useSheetDismiss(onClose)}>.
+// Drag-the-handle-down-to-dismiss for bottom sheets.
 //
-// Uses Pointer Events (work for touch AND mouse), so no ref is needed — scroll
-// position is read from the event target. A drag only starts at the top of the
-// sheet's scroll and not on an interactive control, so content still scrolls and
-// taps/inputs still work. Dragging down past a threshold dismisses.
+// The drag is bound to the sheet's HANDLE (not the whole sheet) and the handle
+// carries `touch-action: none`, so the browser can't steal the gesture for
+// scrolling / pull-to-refresh (which was killing the drag on short sheets). The
+// sheet body keeps normal scrolling.
+//
+// Usage:
+//   const drag = useSheetDismiss(onClose)
+//   <div className="sheet" style={drag.style}>
+//     <div className="sheet-handle" {...drag.handleProps} />
+//     ...
+//   </div>
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
-const THRESHOLD = 90 // px
+const THRESHOLD = 80 // px
 
 export function useSheetDismiss(onDismiss) {
-  const [drag, setDrag] = useState(null) // { startY, dy } | null
+  const startY = useRef(null)
+  const dyRef = useRef(0)
+  const [dy, setDy] = useState(0)
 
-  function onPointerDown(e) {
-    if (e.currentTarget.scrollTop > 0) return
-    if (e.target.closest('button, input, textarea, a, select')) return
-    e.currentTarget.setPointerCapture?.(e.pointerId)
-    setDrag({ startY: e.clientY, dy: 0 })
-  }
-  function onPointerMove(e) {
-    setDrag((d) => {
-      if (!d) return d
-      const dy = e.clientY - d.startY
-      return { ...d, dy: dy > 0 ? dy : 0 }
-    })
-  }
-  function onPointerUp() {
-    setDrag((d) => {
-      if (d && d.dy > THRESHOLD) onDismiss()
-      return null
-    })
+  const handleProps = {
+    style: { touchAction: 'none', cursor: 'grab' },
+    onPointerDown(e) {
+      startY.current = e.clientY
+      dyRef.current = 0
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+      } catch {
+        /* ignore */
+      }
+    },
+    onPointerMove(e) {
+      if (startY.current == null) return
+      const d = e.clientY - startY.current
+      dyRef.current = d > 0 ? d : 0
+      setDy(dyRef.current)
+    },
+    onPointerUp() {
+      if (startY.current == null) return
+      const shouldDismiss = dyRef.current > THRESHOLD
+      startY.current = null
+      dyRef.current = 0
+      setDy(0)
+      if (shouldDismiss) onDismiss?.()
+    },
+    onPointerCancel() {
+      startY.current = null
+      dyRef.current = 0
+      setDy(0)
+    },
   }
 
-  const dy = drag?.dy || 0
   const style = dy ? { transform: `translateY(${dy}px)`, transition: 'none' } : undefined
-
-  return {
-    onPointerDown,
-    onPointerMove,
-    onPointerUp,
-    onPointerCancel: () => setDrag(null),
-    style,
-  }
+  return { handleProps, style }
 }

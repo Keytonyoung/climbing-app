@@ -22,8 +22,8 @@ export default function TrackRecordPanel({
   const dismiss = useSheetDismiss(onClose || (() => {}))
   if (!recording) {
     return (
-      <div className="sheet" {...dismiss}>
-        <div className="sheet-handle" />
+      <div className="sheet" style={dismiss.style}>
+        <div className="sheet-handle" {...dismiss.handleProps} />
         <header className="sheet-header">
           <h2>Approach trail</h2>
           <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
@@ -43,7 +43,7 @@ export default function TrackRecordPanel({
 
   return (
     <div className="sheet">
-      <div className="sheet-handle" />
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <h2>Recording trail…</h2>
       </header>

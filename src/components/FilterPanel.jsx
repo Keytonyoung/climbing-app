@@ -35,8 +35,8 @@ export default function FilterPanel({ filter, onChange, counts, onClose }) {
   const boulderOn = filter.types.includes('boulder')
 
   return (
-    <div className="sheet" {...dismiss}>
-      <div className="sheet-handle" />
+    <div className="sheet" style={dismiss.style}>
+      <div className="sheet-handle" {...dismiss.handleProps} />
       <header className="sheet-header">
         <h2>Filter routes</h2>
         <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
