@@ -1,36 +1,46 @@
-// Swipe-down-to-dismiss for bottom sheets. Spread the returned handlers + ref +
-// style onto the `.sheet` element. Only dismisses when the drag starts at the
-// top of the sheet's scroll (so dragging a scrolled sheet scrolls content), and
-// only on a downward drag past a threshold.
+// Swipe/drag-down-to-dismiss for bottom sheets. Spread the returned props onto
+// the `.sheet` element: <div className="sheet" {...useSheetDismiss(onClose)}>.
+//
+// Uses Pointer Events (work for touch AND mouse), so no ref is needed — scroll
+// position is read from the event target. A drag only starts at the top of the
+// sheet's scroll and not on an interactive control, so content still scrolls and
+// taps/inputs still work. Dragging down past a threshold dismisses.
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 const THRESHOLD = 90 // px
 
 export function useSheetDismiss(onDismiss) {
-  const elRef = useRef(null)
-  const startY = useRef(null)
-  const atTop = useRef(true)
-  const [dy, setDy] = useState(0)
+  const [drag, setDrag] = useState(null) // { startY, dy } | null
 
-  function onTouchStart(e) {
-    startY.current = e.touches[0].clientY
-    atTop.current = (elRef.current?.scrollTop || 0) <= 0
+  function onPointerDown(e) {
+    if (e.currentTarget.scrollTop > 0) return
+    if (e.target.closest('button, input, textarea, a, select')) return
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    setDrag({ startY: e.clientY, dy: 0 })
   }
-  function onTouchMove(e) {
-    if (startY.current == null || !atTop.current) return
-    const delta = e.touches[0].clientY - startY.current
-    if (delta > 0) setDy(delta) // only downward
+  function onPointerMove(e) {
+    setDrag((d) => {
+      if (!d) return d
+      const dy = e.clientY - d.startY
+      return { ...d, dy: dy > 0 ? dy : 0 }
+    })
   }
-  function onTouchEnd() {
-    if (dy > THRESHOLD) onDismiss()
-    setDy(0)
-    startY.current = null
+  function onPointerUp() {
+    setDrag((d) => {
+      if (d && d.dy > THRESHOLD) onDismiss()
+      return null
+    })
   }
 
-  // Only apply an inline transform while actively dragging, so the CSS slide-up
-  // entry animation isn't overridden on mount.
+  const dy = drag?.dy || 0
   const style = dy ? { transform: `translateY(${dy}px)`, transition: 'none' } : undefined
 
-  return { ref: elRef, onTouchStart, onTouchMove, onTouchEnd, style }
+  return {
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel: () => setDrag(null),
+    style,
+  }
 }
