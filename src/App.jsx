@@ -732,6 +732,7 @@ export default function App() {
     setAdding(false)
     setShowTrack(false)
     armTap(false)
+    closeSheets()
   }
   const toggleAdd = () => {
     // Adding pins writes to the shared backend — require sign-in first.
@@ -747,6 +748,7 @@ export default function App() {
     setShowFilter(false)
     setShowTrack(false)
     setGeoError(null)
+    closeSheets()
   }
   const toggleTrack = () => {
     if (recording) return // don't hide an active recording
@@ -759,6 +761,7 @@ export default function App() {
     setShowFilter(false)
     setAdding(false)
     armTap(false)
+    closeSheets()
   }
 
   function toggleSatellite() {
@@ -863,7 +866,12 @@ export default function App() {
       </header>
 
       {showFilter && (
-        <FilterPanel filter={filter} onChange={handleFilterChange} counts={counts} />
+        <FilterPanel
+          filter={filter}
+          onChange={handleFilterChange}
+          counts={counts}
+          onClose={() => setShowFilter(false)}
+        />
       )}
       {adding && (
         <AddPinControl
@@ -873,21 +881,25 @@ export default function App() {
           onTapMode={() => armTap(true)}
           armed={tapArmed}
           onCancel={() => armTap(false)}
+          onClose={() => { setAdding(false); armTap(false) }}
           geoError={geoError}
         />
       )}
       {locating && (
-        <div className="filter-panel">
-          <div className="filter-group">
-            <span className="filter-label">Fix location — {locating.name}</span>
+        <div className="sheet">
+          <div className="sheet-handle" />
+          <header className="sheet-header">
+            <h2>Fix location — {locating.name}</h2>
+            <button className="sheet-close" onClick={cancelFixLocation} aria-label="Close">✕</button>
+          </header>
+          <div className="filter-panel">
             <p className="record-hint">Drag the green pin onto the wall, or use your location if you're there.</p>
+            <div className="place-actions">
+              <button className="place-btn primary" onClick={fixUseMyLocation}>📍 Use my location</button>
+              <button className="place-btn" onClick={saveFixLocation}>Save location</button>
+            </div>
+            {geoError && <p className="place-error">{geoError}</p>}
           </div>
-          <div className="place-actions">
-            <button className="place-btn primary" onClick={fixUseMyLocation}>📍 Use my location</button>
-            <button className="place-btn" onClick={saveFixLocation}>Save location</button>
-            <button className="reset" onClick={cancelFixLocation}>Cancel</button>
-          </div>
-          {geoError && <p className="place-error">{geoError}</p>}
         </div>
       )}
       {(showTrack || recording) && (
@@ -897,6 +909,7 @@ export default function App() {
           onStart={startRecording}
           onStop={stopRecording}
           onDiscard={discardRecording}
+          onClose={recording ? undefined : () => setShowTrack(false)}
           wakeWarning={wakeWarning}
         />
       )}

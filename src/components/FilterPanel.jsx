@@ -6,6 +6,7 @@ import {
   V_MAX,
   DEFAULT_FILTER,
 } from '../data/routes'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 const TYPE_LABELS = {
   sport: 'Sport',
@@ -19,7 +20,8 @@ const ydsLabel = (n) => `5.${n}`
 const vLabel = (n) => `V${n}`
 const range = (lo, hi) => Array.from({ length: hi - lo + 1 }, (_, i) => lo + i)
 
-export default function FilterPanel({ filter, onChange, counts }) {
+export default function FilterPanel({ filter, onChange, counts, onClose }) {
+  const dismiss = useSheetDismiss(onClose)
   const toggleType = (type) => {
     const types = filter.types.includes(type)
       ? filter.types.filter((t) => t !== type)
@@ -33,7 +35,13 @@ export default function FilterPanel({ filter, onChange, counts }) {
   const boulderOn = filter.types.includes('boulder')
 
   return (
-    <div className="filter-panel">
+    <div className="sheet" {...dismiss}>
+      <div className="sheet-handle" />
+      <header className="sheet-header">
+        <h2>Filter routes</h2>
+        <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
+      </header>
+      <div className="filter-panel">
       <div className="filter-group">
         <span className="filter-label">Type</span>
         <div className="chips">
@@ -102,6 +110,7 @@ export default function FilterPanel({ filter, onChange, counts }) {
         <button className="reset" onClick={() => onChange({ ...DEFAULT_FILTER })}>
           Reset
         </button>
+      </div>
       </div>
     </div>
   )

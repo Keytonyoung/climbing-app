@@ -3,6 +3,7 @@
 // the map. App owns the actual marker/placement; this is the chooser UI.
 
 import { CATEGORIES } from '../data/pins'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 export default function AddPinControl({
   category,
@@ -11,12 +12,20 @@ export default function AddPinControl({
   onTapMode,
   armed,
   onCancel,
+  onClose,
   geoError,
 }) {
+  const dismiss = useSheetDismiss(onClose)
   return (
-    <div className="filter-panel">
+    <div className="sheet" {...dismiss}>
+      <div className="sheet-handle" />
+      <header className="sheet-header">
+        <h2>Add a pin</h2>
+        <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
+      </header>
+      <div className="filter-panel">
       <div className="filter-group">
-        <span className="filter-label">New pin — category</span>
+        <span className="filter-label">Category</span>
         <div className="chips">
           {CATEGORIES.map((c) => (
             <button
@@ -50,6 +59,7 @@ export default function AddPinControl({
       )}
 
       {geoError && <p className="place-error">{geoError}</p>}
+      </div>
     </div>
   )
 }

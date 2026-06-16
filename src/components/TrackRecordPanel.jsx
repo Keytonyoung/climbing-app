@@ -2,6 +2,7 @@
 // and (while recording) a live banner with stats + Stop / Discard.
 
 import { formatDistance } from '../data/tracks'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 function fmtElapsed(sec) {
   const m = Math.floor(sec / 60)
@@ -15,27 +16,38 @@ export default function TrackRecordPanel({
   onStart,
   onStop,
   onDiscard,
+  onClose,
   wakeWarning,
 }) {
+  const dismiss = useSheetDismiss(onClose || (() => {}))
   if (!recording) {
     return (
-      <div className="filter-panel">
-        <div className="filter-group">
-          <span className="filter-label">Record an approach trail</span>
+      <div className="sheet" {...dismiss}>
+        <div className="sheet-handle" />
+        <header className="sheet-header">
+          <h2>Approach trail</h2>
+          <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
+        </header>
+        <div className="filter-panel">
           <p className="record-hint">
             Walk from your parking spot to the wall with the app open. Your screen
             will stay awake while recording. You’ll link both ends when you stop.
           </p>
+          <button className="place-btn primary" onClick={onStart}>
+            ● Start recording
+          </button>
         </div>
-        <button className="place-btn primary" onClick={onStart}>
-          ● Start recording
-        </button>
       </div>
     )
   }
 
   return (
-    <div className="filter-panel">
+    <div className="sheet">
+      <div className="sheet-handle" />
+      <header className="sheet-header">
+        <h2>Recording trail…</h2>
+      </header>
+      <div className="filter-panel">
       <div className="record-stats">
         <span className="record-dot" />
         <span className="record-stat">{formatDistance(stats.lengthMeters)}</span>
@@ -50,6 +62,7 @@ export default function TrackRecordPanel({
         <button className="place-btn" onClick={onDiscard}>
           Discard
         </button>
+      </div>
       </div>
     </div>
   )
