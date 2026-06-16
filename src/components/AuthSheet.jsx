@@ -4,9 +4,11 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { sendMagicLink, signOut, displayName } from '../data/auth'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 export default function AuthSheet({ onClose }) {
   const { user } = useAuth()
+  const dismiss = useSheetDismiss(onClose)
   const [step, setStep] = useState('email') // 'email' | 'sent'
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
@@ -26,7 +28,7 @@ export default function AuthSheet({ onClose }) {
   }
 
   return (
-    <div className="sheet">
+    <div className="sheet" {...dismiss}>
       <div className="sheet-handle" />
       <header className="sheet-header">
         <h2>{user ? 'Account' : 'Sign in to contribute'}</h2>

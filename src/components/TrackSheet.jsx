@@ -2,14 +2,16 @@
 // zoom/open), notes, and Delete.
 
 import { resolveAnchor, formatDistance } from '../data/tracks'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 export default function TrackSheet({ track, pins, mine, onAnchorTap, onDelete, onClose }) {
   const coords = track.coordinates
   const start = resolveAnchor(track.start, pins, coords[0])
   const end = resolveAnchor(track.end, pins, coords[coords.length - 1])
+  const dismiss = useSheetDismiss(onClose)
 
   return (
-    <div className="sheet">
+    <div className="sheet" {...dismiss}>
       <div className="sheet-handle" />
       <header className="sheet-header">
         <div>

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import NotesPhotos from './NotesPhotos'
 import { openDirections } from '../lib/directions'
 import { shareUrl, shareOrCopy } from '../lib/share'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 const TYPE_LABELS = {
   sport: 'Sport',
@@ -24,6 +25,7 @@ export default function WallSheet({
   onResetLocation,
   onClose,
 }) {
+  const dismiss = useSheetDismiss(onClose)
   const [copied, setCopied] = useState(false)
   async function share() {
     const res = await shareOrCopy(shareUrl({ wallId: wall.id }), wall.name)
@@ -34,7 +36,7 @@ export default function WallSheet({
   }
 
   return (
-    <div className="sheet">
+    <div className="sheet" {...dismiss}>
       <div className="sheet-handle" />
       <header className="sheet-header">
         <div>

@@ -4,18 +4,20 @@
 import { useState } from 'react'
 import { CATEGORIES, categoryLabel } from '../data/pins'
 import { openDirections } from '../lib/directions'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCancel }) {
   const [category, setCategory] = useState(pin.category)
   const [label, setLabel] = useState(pin.label || '')
   const [notes, setNotes] = useState(pin.notes || '')
 
+  const dismiss = useSheetDismiss(onCancel)
   const save = () => onSave({ ...pin, category, label: label.trim(), notes: notes.trim() })
   const editable = isNew || mine
 
   if (!editable) {
     return (
-      <div className="sheet">
+      <div className="sheet" {...dismiss}>
         <div className="sheet-handle" />
         <header className="sheet-header">
           <h2>{pin.label || categoryLabel(pin.category)}</h2>
@@ -34,7 +36,7 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
   }
 
   return (
-    <div className="sheet">
+    <div className="sheet" {...dismiss}>
       <div className="sheet-handle" />
       <header className="sheet-header">
         <h2>{isNew ? 'New pin' : 'Edit pin'}</h2>

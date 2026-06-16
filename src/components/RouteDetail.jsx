@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import NotesPhotos from './NotesPhotos'
 import { shareUrl, shareOrCopy } from '../lib/share'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 const TYPE_LABELS = {
   sport: 'Sport',
@@ -20,6 +21,7 @@ const SOURCE_LABELS = {
 
 export default function RouteDetail({ route, wall, onBack, onClose }) {
   const scale = route.type === 'boulder' ? 'V-scale' : 'YDS'
+  const dismiss = useSheetDismiss(onClose)
   const [copied, setCopied] = useState(false)
   async function share() {
     const res = await shareOrCopy(shareUrl({ wallId: wall.id, routeId: route.id }), route.name)
@@ -30,7 +32,7 @@ export default function RouteDetail({ route, wall, onBack, onClose }) {
   }
 
   return (
-    <div className="sheet">
+    <div className="sheet" {...dismiss}>
       <div className="sheet-handle" />
       <header className="sheet-header">
         <button className="sheet-back" onClick={onBack}>

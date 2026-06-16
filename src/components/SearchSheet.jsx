@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { searchWallsAndRoutes } from '../data/routes'
+import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 export default function SearchSheet({ onPick, onClose }) {
   const [q, setQ] = useState('')
   const inputRef = useRef(null)
+  const dismiss = useSheetDismiss(onClose)
   const results = searchWallsAndRoutes(q)
 
   useEffect(() => {
@@ -13,7 +15,7 @@ export default function SearchSheet({ onPick, onClose }) {
   }, [])
 
   return (
-    <div className="sheet search-sheet">
+    <div className="sheet search-sheet" {...dismiss}>
       <div className="sheet-handle" />
       <header className="sheet-header">
         <input
