@@ -749,6 +749,23 @@ html, body, #root {
 .welcome-tips li {
   padding-left: 4px;
 }
+.welcome-install {
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--color-chip);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.welcome-install strong {
+  color: var(--color-text);
+}
+.welcome-install p {
+  margin-top: 4px;
+  color: var(--color-text-muted);
+}
+
 .welcome-disclaimer {
   font-size: 13px;
   line-height: 1.5;

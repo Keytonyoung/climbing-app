@@ -3,7 +3,27 @@
 // in localStorage. UI never talks to storage elsewhere, but this is a one-off
 // presentational flag, not app data.
 
+// Already running as an installed app? Then skip the install tip.
+function isStandalone() {
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  )
+}
+
+// iPhone/iPad (incl. iPadOS, which reports as Mac with touch).
+function isIOS() {
+  const ua = navigator.userAgent
+  return (
+    /iphone|ipad|ipod/i.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+}
+
 export default function WelcomeOverlay({ onDismiss }) {
+  const showInstall = !isStandalone()
+  const ios = isIOS()
+
   return (
     <div className="welcome-overlay">
       <div className="welcome-card">
@@ -16,6 +36,23 @@ export default function WelcomeOverlay({ onDismiss }) {
           <li><strong>🧭 Directions</strong> opens your maps app to a pin or wall.</li>
           <li><strong>Save area offline</strong> before you lose signal at the crag.</li>
         </ul>
+
+        {showInstall && (
+          <div className="welcome-install">
+            <strong>📲 Install it for the full experience</strong>
+            {ios ? (
+              <p>
+                In <strong>Safari</strong>, tap the Share button (the box with an ↑) at the
+                bottom, then <strong>Add to Home Screen</strong>.
+              </p>
+            ) : (
+              <p>
+                In <strong>Chrome</strong>, tap the <strong>⋮</strong> menu (top right), then
+                <strong> Install app</strong> (or Add to Home Screen).
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="welcome-disclaimer">
           <strong>Climb at your own risk.</strong> Route info, grades, and locations are
