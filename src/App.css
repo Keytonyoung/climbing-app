@@ -260,6 +260,14 @@ html, body, #root {
 .auth-who {
   font-size: 16px;
 }
+.auth-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-line);
+}
 
 /* Notes & photos block (routes + walls) */
 .notes-photos {
@@ -662,6 +670,21 @@ html, body, #root {
 }
 .route-row .route-type {
   text-transform: capitalize;
+}
+
+/* Offline indicator bar */
+.offline-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #5d6b78;
+  padding: 4px 8px;
 }
 
 /* Toast (transient messages, replaces alert) */

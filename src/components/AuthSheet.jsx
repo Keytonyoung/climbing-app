@@ -1,18 +1,39 @@
 // Sign-in / account bottom sheet. Two steps when signed out (email → code);
 // shows account + sign out when signed in.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import { sendMagicLink, signOut, displayName } from '../data/auth'
+import { sendMagicLink, signOut, displayName, updateDisplayName } from '../data/auth'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
 
-export default function AuthSheet({ onClose }) {
+export default function AuthSheet({ onClose, onShowHelp }) {
   const { user } = useAuth()
   const dismiss = useSheetDismiss(onClose)
   const [step, setStep] = useState('email') // 'email' | 'sent'
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [name, setName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [savedName, setSavedName] = useState(false)
+
+  useEffect(() => {
+    if (user) setName(displayName(user))
+  }, [user])
+
+  async function saveName() {
+    setSavingName(true)
+    setError(null)
+    try {
+      await updateDisplayName(name)
+      setSavedName(true)
+      setTimeout(() => setSavedName(false), 2000)
+    } catch (e) {
+      setError(e.message || String(e))
+    } finally {
+      setSavingName(false)
+    }
+  }
 
   async function send() {
     setBusy(true)
@@ -37,11 +58,28 @@ export default function AuthSheet({ onClose }) {
 
       {user ? (
         <div className="auth-body">
-          <p className="auth-who">Signed in as <strong>{displayName(user)}</strong></p>
           <p className="sheet-path">{user.email}</p>
-          <button className="pin-delete" onClick={async () => { await signOut(); onClose() }}>
+          <div className="filter-group">
+            <span className="filter-label">Display name (how buddies see you)</span>
+            <input
+              className="pin-input"
+              type="text"
+              value={name}
+              placeholder="Your name"
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <button
+            className="pin-save"
+            disabled={savingName || !name.trim() || name.trim() === displayName(user)}
+            onClick={saveName}
+          >
+            {savedName ? 'Saved ✓' : savingName ? 'Saving…' : 'Save name'}
+          </button>
+          <button className="reset" onClick={async () => { await signOut(); onClose() }}>
             Sign out
           </button>
+          {error && <p className="place-error">{error}</p>}
         </div>
       ) : (
         <div className="auth-body">
@@ -68,9 +106,12 @@ export default function AuthSheet({ onClose }) {
           ) : (
             <>
               <p className="auth-intro">
-                Check <strong>{email}</strong> and tap the sign-in link. You can come
-                back here once you're done — you'll be signed in automatically.
+                Check <strong>{email}</strong> and tap the sign-in link (check spam too).
+                Open it on this device; you'll be signed in automatically when you return.
               </p>
+              <button className="pin-save" disabled={busy} onClick={send}>
+                {busy ? 'Sending…' : 'Resend link'}
+              </button>
               <button className="reset" onClick={() => { setStep('email'); setError(null) }}>
                 Use a different email
               </button>
@@ -80,6 +121,13 @@ export default function AuthSheet({ onClose }) {
           {error && <p className="place-error">{error}</p>}
         </div>
       )}
+
+      <footer className="auth-footer">
+        <button className="link-btn" onClick={onShowHelp}>Help &amp; safety</button>
+        <a className="link-btn" href="mailto:keytonyoung@gmail.com?subject=Western%20Slope%20Climbing%20feedback">
+          Send feedback
+        </a>
+      </footer>
     </div>
   )
 }

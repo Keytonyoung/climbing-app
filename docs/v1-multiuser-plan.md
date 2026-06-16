@@ -17,6 +17,20 @@ once confirmed.
 
 ---
 
+## #1 POST-LAUNCH FEATURE — Strava-style climb logging + activity feed
+
+Decided 2026-06-13 (Cole's idea, refined). The marquee feature *after* friends are
+using the core app — evidence-gated and benefits from seeing real usage first.
+- **Log an ascent** on a route: date, style (onsight/flash/redpoint/repeat/TR), optional
+  note + felt-grade, and a **public/private toggle**.
+- **`ticks` (ascents) table**: id, author_id, route_id, wall_id, date, style, note,
+  felt_grade, is_public, created_at. RLS: read public-or-own, write own.
+- **Activity feed**: friends' recent public logs ("Cole sent Sisyphus 5.11d 🔴 yesterday")
+  — the social/engagement loop. Your own **logbook** view too.
+- This generates content automatically, creates the social pull, and is the literal
+  "platforms are built by the people on them" mechanism. Reuses the data-layer + offline
+  sync patterns. **NOT in-app chat** — that's redundant with texting + the share link.
+
 ## 1. The vision we are building toward
 
 Trajectory (each step gated by real evidence, not built on spec):

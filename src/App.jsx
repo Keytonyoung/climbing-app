@@ -110,6 +110,7 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('welcomed'))
   const [toast, setToast] = useState(null)
   const [showSearch, setShowSearch] = useState(false)
+  const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
   const [dl, setDl] = useState(null) // offline-download state
   const [satellite, setSatellite] = useState(false)
   const [overrides, setOverrides] = useState({}) // wallId -> corrected coords
@@ -364,6 +365,17 @@ export default function App() {
       setTracks(await getTracks())
       setOverrides(await getOverrides())
     })
+  }, [])
+
+  // Track connectivity for the offline indicator.
+  useEffect(() => {
+    const update = () => setOffline(!navigator.onLine)
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+    }
   }, [])
 
   // Open a shared deep link (?wall=&route=) once the map is ready, then clean the URL.
@@ -986,7 +998,17 @@ export default function App() {
         />
       )}
 
-      {showAuth && <AuthSheet onClose={() => setShowAuth(false)} />}
+      {showAuth && (
+        <AuthSheet
+          onClose={() => setShowAuth(false)}
+          onShowHelp={() => {
+            setShowAuth(false)
+            setShowWelcome(true)
+          }}
+        />
+      )}
+
+      {offline && <div className="offline-bar">Offline — showing saved data; changes sync later</div>}
 
       {toast && <div className="toast">{toast}</div>}
 

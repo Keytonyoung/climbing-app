@@ -60,3 +60,15 @@ export async function sendMagicLink(email) {
 export async function signOut() {
   if (isSupabaseConfigured) await supabase.auth.signOut()
 }
+
+/** Set the current user's display name (session metadata + shared profile row,
+ *  so it shows on the account button and on everyone else's attribution). */
+export async function updateDisplayName(name) {
+  if (!isSupabaseConfigured) throw new Error('Backend not configured')
+  const trimmed = (name || '').trim()
+  if (!trimmed) throw new Error('Name cannot be empty')
+  const { error } = await supabase.auth.updateUser({ data: { display_name: trimmed } })
+  if (error) throw error
+  const { data } = await supabase.auth.getUser()
+  if (data.user) await supabase.from('profiles').update({ display_name: trimmed }).eq('id', data.user.id)
+}
