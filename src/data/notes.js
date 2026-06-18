@@ -122,8 +122,19 @@ export async function getPhotos(kind, id) {
     id: p.id,
     authorId: p.author_id,
     storagePath: p.storage_path,
+    caption: p.caption || '',
     url: publicUrl(p.storage_path),
   }))
+}
+
+/** Set/clear the caption on a photo (owner only, per RLS). */
+export async function setPhotoCaption(photoId, caption) {
+  if (!supabase) return
+  const { error } = await supabase
+    .from('photos')
+    .update({ caption: (caption || '').trim() })
+    .eq('id', photoId)
+  if (error) throw error
 }
 
 /** Upload a (downscaled) photo Blob and record it (requires sign-in). */

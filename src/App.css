@@ -415,7 +415,21 @@ html, body, #root {
 }
 .photo-viewer-actions {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  align-items: stretch;
+}
+.caption-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.photo-caption {
+  color: #fff;
+  font-size: 15px;
+  text-align: center;
 }
 
 /* Filter panel */

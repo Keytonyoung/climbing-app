@@ -5,7 +5,15 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import { getNotes, addNote, deleteNote, getPhotos, addPhoto, deletePhoto } from '../data/notes'
+import {
+  getNotes,
+  addNote,
+  deleteNote,
+  getPhotos,
+  addPhoto,
+  deletePhoto,
+  setPhotoCaption,
+} from '../data/notes'
 import { downscaleImage } from '../lib/image'
 
 function formatDate(iso) {
@@ -20,9 +28,20 @@ export default function NotesPhotos({ kind, id }) {
   const [savingNote, setSavingNote] = useState(false)
   const [noteError, setNoteError] = useState(null)
 
-  const [photos, setPhotos] = useState([]) // { id, url, authorId }
+  const [photos, setPhotos] = useState([]) // { id, url, authorId, caption }
   const [busy, setBusy] = useState(false)
   const [viewer, setViewer] = useState(null)
+  const [captionDraft, setCaptionDraft] = useState('')
+
+  function openViewer(p) {
+    setViewer(p)
+    setCaptionDraft(p.caption || '')
+  }
+  async function saveCaption() {
+    await setPhotoCaption(viewer.id, captionDraft)
+    setViewer({ ...viewer, caption: captionDraft.trim() })
+    setPhotos(await getPhotos(kind, id))
+  }
   const [photoError, setPhotoError] = useState(null)
 
   useEffect(() => {
@@ -123,7 +142,7 @@ export default function NotesPhotos({ kind, id }) {
       <h3 className="photos-heading">Photos</h3>
       <div className="photo-grid">
         {photos.map((p) => (
-          <button key={p.id} className="photo-thumb" onClick={() => setViewer(p)}>
+          <button key={p.id} className="photo-thumb" onClick={() => openViewer(p)}>
             <img src={p.url} alt="" loading="lazy" />
           </button>
         ))}
@@ -147,6 +166,22 @@ export default function NotesPhotos({ kind, id }) {
         <div className="photo-viewer" onClick={() => setViewer(null)}>
           <img src={viewer.url} alt="" onClick={(e) => e.stopPropagation()} />
           <div className="photo-viewer-actions" onClick={(e) => e.stopPropagation()}>
+            {user && viewer.authorId === user.id ? (
+              <div className="caption-edit">
+                <input
+                  className="pin-input"
+                  type="text"
+                  placeholder="Add a caption…"
+                  value={captionDraft}
+                  onChange={(e) => setCaptionDraft(e.target.value)}
+                />
+                {captionDraft.trim() !== (viewer.caption || '') && (
+                  <button className="pin-save" onClick={saveCaption}>Save caption</button>
+                )}
+              </div>
+            ) : (
+              viewer.caption && <p className="photo-caption">{viewer.caption}</p>
+            )}
             {user && viewer.authorId === user.id && (
               <button className="pin-delete" onClick={() => removePhoto(viewer.id)}>
                 Delete photo
