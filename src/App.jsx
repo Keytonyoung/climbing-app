@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {
+  initSeed,
   getWall,
   getWallsGeoJSON,
   getFilteredCounts,
@@ -160,8 +161,9 @@ export default function App() {
       'top-right'
     )
 
-    map.current.on('load', () => {
+    map.current.on('load', async () => {
       const m = map.current
+      await initSeed() // route data loads as a separate chunk (kept out of the main bundle)
 
       // --- Satellite basemap (toggle; hidden by default) ---
       // Added first so it sits above the street style but below our data layers.

@@ -2,10 +2,24 @@
 // JSON, the OpenBeta API, or storage directly. When local storage is later
 // replaced by a backend (CLAUDE.md section 4, rule 2), only this file changes.
 
-import seed from './seed/western-co.json'
+// The route seed is loaded LAZILY (dynamic import) so the ~2.7MB JSON isn't
+// baked into the main JS bundle — the app shell loads fast, then the route data
+// streams in as a separate chunk. initSeed() must resolve before the sync
+// getters below return data; App awaits it during map load.
+let seed = null
 
-/** Metadata about the bundled snapshot (when it was fetched, counts, etc.). */
+export async function initSeed() {
+  if (!seed) seed = (await import('./seed/western-co.json')).default
+  return seed
+}
+
+function walls() {
+  return seed ? seed.walls : []
+}
+
+/** Metadata about the snapshot (when it was fetched, counts, etc.). */
 export function getSeedInfo() {
+  if (!seed) return { wallCount: 0, routeCount: 0 }
   return {
     generatedAt: seed.generatedAt,
     source: seed.source,
@@ -17,12 +31,12 @@ export function getSeedInfo() {
 
 /** All walls (crags), each with its list of routes. */
 export function getWalls() {
-  return seed.walls
+  return walls()
 }
 
 /** A single wall by id, or undefined. */
 export function getWall(id) {
-  return seed.walls.find((w) => w.id === id)
+  return walls().find((w) => w.id === id)
 }
 
 // Lazily-built route id -> { routeName, grade, wallId, wallName } index, for
@@ -31,7 +45,7 @@ let _routeIndex = null
 function routeIndex() {
   if (!_routeIndex) {
     _routeIndex = new Map()
-    for (const w of seed.walls) {
+    for (const w of walls()) {
       for (const r of w.routes) {
         _routeIndex.set(r.id, {
           routeName: r.name,
@@ -116,9 +130,9 @@ export function isDefaultFilter(filter) {
 
 /** Walls whose routes match the filter, each carrying only its matching routes. */
 export function getFilteredWalls(filter) {
-  if (!filter || isDefaultFilter(filter)) return seed.walls
+  if (!filter || isDefaultFilter(filter)) return walls()
   const out = []
-  for (const wall of seed.walls) {
+  for (const wall of walls()) {
     const routes = wall.routes.filter((r) => routePasses(r, filter))
     if (routes.length > 0) out.push({ ...wall, routes })
   }
@@ -162,7 +176,7 @@ export function searchWallsAndRoutes(query, limit = 25) {
   const q = query.trim().toLowerCase()
   if (q.length < 2) return []
   const out = []
-  for (const wall of seed.walls) {
+  for (const wall of walls()) {
     if (wall.name.toLowerCase().includes(q)) {
       out.push({ kind: 'wall', wallId: wall.id, title: wall.name, subtitle: wall.path.join(' › ') })
       if (out.length >= limit) return out
