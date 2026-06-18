@@ -25,6 +25,31 @@ export function getWall(id) {
   return seed.walls.find((w) => w.id === id)
 }
 
+// Lazily-built route id -> { routeName, grade, wallId, wallName } index, for
+// resolving logged ascents (which store only route_id) into readable labels.
+let _routeIndex = null
+function routeIndex() {
+  if (!_routeIndex) {
+    _routeIndex = new Map()
+    for (const w of seed.walls) {
+      for (const r of w.routes) {
+        _routeIndex.set(r.id, {
+          routeName: r.name,
+          grade: r.grade,
+          wallId: w.id,
+          wallName: w.name,
+        })
+      }
+    }
+  }
+  return _routeIndex
+}
+
+/** Resolve a route id to readable labels, or null if not in the seed. */
+export function routeRef(routeId) {
+  return routeIndex().get(routeId) || null
+}
+
 // --- Filtering ------------------------------------------------------------
 //
 // Two grade scales coexist: YDS (roped — sport/trad/toprope) and V (boulder).

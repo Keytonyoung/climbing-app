@@ -37,6 +37,7 @@ import { useSheetDismiss } from './lib/useSheetDismiss'
 import AuthSheet from './components/AuthSheet'
 import WelcomeOverlay from './components/WelcomeOverlay'
 import SearchSheet from './components/SearchSheet'
+import FeedSheet from './components/FeedSheet'
 import FilterPanel from './components/FilterPanel'
 import WallSheet from './components/WallSheet'
 import RouteDetail from './components/RouteDetail'
@@ -111,6 +112,7 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('welcomed'))
   const [toast, setToast] = useState(null)
   const [showSearch, setShowSearch] = useState(false)
+  const [showFeed, setShowFeed] = useState(false)
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
   const [dl, setDl] = useState(null) // offline-download state
   const [satellite, setSatellite] = useState(false)
@@ -937,6 +939,13 @@ export default function App() {
       </button>
 
       <nav id="action-bar">
+        <button
+          className={`action-btn ${showFeed ? 'active' : ''}`}
+          onClick={() => { closeSheets(); setShowFilter(false); setAdding(false); armTap(false); setShowFeed(true) }}
+        >
+          <span className="action-icon">📣</span>
+          Feed
+        </button>
         <button className={`action-btn ${filtered ? 'active' : ''}`} onClick={toggleFilter}>
           <span className="action-icon">⛃</span>
           Filter{filtered ? ' •' : ''}
@@ -1000,6 +1009,16 @@ export default function App() {
           onFixLocation={startFixLocation}
           onResetLocation={resetWallLocation}
           onClose={closeSheets}
+        />
+      )}
+
+      {showFeed && (
+        <FeedSheet
+          onPick={(wallId, routeId) => {
+            setShowFeed(false)
+            openWallById(wallId, routeId)
+          }}
+          onClose={() => setShowFeed(false)}
         />
       )}
 

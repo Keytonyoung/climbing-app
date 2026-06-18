@@ -81,6 +81,30 @@ export async function logTick({ routeId, wallId, style, note, climbedOn }) {
   }
 }
 
+/** Recent ascents for the feed. `mine` + `userId` restricts to your own logs.
+ *  Returns enriched ticks (author name resolved); route labels are resolved in
+ *  the UI via routeRef so this stays a pure data query. */
+export async function getRecentTicks({ mine = false, userId = null, limit = 50 } = {}) {
+  if (!isOnline() || !supabase) {
+    // Offline: serve from cache (whatever routes we've viewed/logged).
+    let rows = await cacheGetAll('ticks')
+    if (mine && userId) rows = rows.filter((r) => r.author_id === userId)
+    return rows
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(0, limit)
+      .map(cacheToTick)
+  }
+  let query = supabase.from('ticks').select('*').order('created_at', { ascending: false }).limit(limit)
+  if (mine && userId) query = query.eq('author_id', userId)
+  const { data, error } = await query
+  if (error) {
+    console.warn('getRecentTicks failed:', error.message)
+    return []
+  }
+  const names = await getDisplayNames(data.map((r) => r.author_id))
+  return data.map((r) => cacheToTick({ ...r, author_name: names[r.author_id] || 'a climber' }))
+}
+
 /** Remove one of your own logged ascents. */
 export async function deleteTick(id) {
   await cacheDelete('ticks', id)
