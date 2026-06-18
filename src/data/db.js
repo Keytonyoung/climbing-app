@@ -6,7 +6,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 6
+const DB_VERSION = 7
 
 let dbPromise = null
 
@@ -43,6 +43,11 @@ export function getDB() {
         if (oldVersion < 6) {
           const ticks = db.createObjectStore('ticks', { keyPath: 'id' })
           ticks.createIndex('route_id', 'route_id')
+        }
+        // v7: drop the dead local 'photos' store — photos now live in Supabase
+        // Storage (see notes.js), so the IndexedDB copy is no longer used.
+        if (oldVersion < 7 && db.objectStoreNames.contains('photos')) {
+          db.deleteObjectStore('photos')
         }
       },
     })
