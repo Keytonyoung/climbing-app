@@ -204,3 +204,34 @@ read-only seed; routes inherit their wall's coords, so we correct WALLS only.
   when an override exists, else the seed coord. UI unchanged.
 - **UX**: WallSheet "Fix location" (signed-in) → reuse the pin-placement flow (use-my-
   location / tap / drag, satellite helps) → save. Shows "moved by X" + "Reset to original".
+
+---
+
+## 10. Scaling buildout (scoped 2026-06-17 — pulled forward; Moab→nationwide GTM)
+
+Cole's go-to-market (show it at Moab; visitors take it home across the US) front-loads
+strangers + out-of-region use, so the scale-turning-point work is brought forward. Build
+order (≈10–15 sessions total at 3–5 hr/wk):
+
+1. **Onboarding (≈1 session)** — mission-led first-run ("Help build the best climbing
+   database — made by climbers, for climbers; log climbs, fix wall locations, add beta"),
+   simple how-to, install steps, reachable later via Help. Optional in-context hints.
+2. **Social / route logging (≈3–4)** — `ticks` table; "Log a climb" on routes (date +
+   style + note); a **tick count** per route; personal logbook; activity feed of recent
+   public logs. Kudos/comments later. Reuses data-layer/offline/attribution patterns.
+3. **Access control (≈1–2)** — `role` on profiles (viewer/contributor/admin); RLS keys
+   *writes* off role so new sign-ups can't immediately edit shared data. The cheap,
+   proactive moderation lever — ship before strangers arrive.
+4. **Nationwide routes + robust offline (≈3–5)** — routes move to Supabase (PostGIS),
+   loaded by viewport (clusters at low zoom). "Save area" downloads routes + tiles +
+   (for the public phase) photos, with storage checks, progress, and a Manage-downloads
+   list. The reliable-offline-download work Cole flagged.
+5. **Admin dashboard (≈2–3)** — admin-only page: signups, recent contributions (what/who/
+   when) with revert, ban/suspend. Soft-delete + audit so nothing's lost. Full pre-approval
+   queue deferred (design schema with a `status` column now, build later if volume demands).
+
+**Key moderation principle (resolves the participation-vs-gatekeeping tension):** split
+contributions by risk. LOW-risk (ticks, your own pins/notes/photos) = open to any signed-in
+user. HIGH-risk (editing shared data others rely on — esp. location overrides, later
+user-edited routes) = gated to contributors and/or trivially revertable + audited. Don't
+pre-approve everything — it would strangle the contribution flywheel that's the whole point.

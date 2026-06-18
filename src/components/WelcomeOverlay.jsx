@@ -28,12 +28,18 @@ export default function WelcomeOverlay({ onDismiss }) {
     <div className="welcome-overlay">
       <div className="welcome-card">
         <h1 className="welcome-title">Western Slope Climbing</h1>
-        <p className="welcome-tagline">Find the wall. Share the beta.</p>
+        <p className="welcome-tagline">Made by climbers, for climbers.</p>
+
+        <div className="welcome-mission">
+          We're building the best climbing database out there — and you're part of it.
+          Log your climbs, fix wall locations, and drop beta (parking, approach trails,
+          notes, photos). Every contribution makes it better for the next climber.
+        </div>
 
         <ul className="welcome-tips">
           <li><strong>Tap a wall</strong> to see its routes, notes, and photos.</li>
-          <li><strong>Sign in</strong> to add parking pins, approach trails, notes & photos.</li>
-          <li><strong>🧭 Directions</strong> opens your maps app to a pin or wall.</li>
+          <li><strong>Sign in</strong> to contribute — it all syncs to everyone.</li>
+          <li><strong>📍 Fix location</strong> if a wall's pin is off — help clean up the map.</li>
           <li><strong>Save area offline</strong> before you lose signal at the crag.</li>
         </ul>
 
