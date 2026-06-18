@@ -18,6 +18,7 @@ export default function RouteLog({ route, wallId }) {
   const [style, setStyle] = useState('redpoint')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
+  const [expanded, setExpanded] = useState(false) // ascent list hidden by default (keeps the phone view tidy)
 
   useEffect(() => {
     let alive = true
@@ -47,15 +48,22 @@ export default function RouteLog({ route, wallId }) {
   return (
     <section className="detail-section">
       <h3>Ascents</h3>
-      <p className="tick-count">
-        {ticks.length === 0
-          ? 'No logged ascents yet — be the first.'
-          : `${ticks.length} logged ascent${ticks.length > 1 ? 's' : ''}`}
-      </p>
+      {ticks.length === 0 ? (
+        <p className="tick-count">No logged ascents yet — be the first.</p>
+      ) : (
+        <button
+          className="tick-count tick-count-toggle"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+        >
+          {ticks.length} logged ascent{ticks.length > 1 ? 's' : ''}
+          <span className="tick-count-caret">{expanded ? '▲' : '▼'}</span>
+        </button>
+      )}
 
-      {ticks.length > 0 && (
+      {ticks.length > 0 && expanded && (
         <ul className="tick-list">
-          {ticks.slice(0, 6).map((t) => (
+          {ticks.map((t) => (
             <li key={t.id} className="tick-item">
               <strong>{t.authorName}</strong>
               {t.style && <span className="tick-style">{STYLE_LABELS[t.style] || t.style}</span>}

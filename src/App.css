@@ -787,6 +787,22 @@ html, body, #root {
   font-weight: 600;
   color: var(--color-primary);
 }
+.tick-count-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.tick-count-caret {
+  font-size: 10px;
+}
 .tick-list {
   list-style: none;
   margin: 8px 0 12px;
