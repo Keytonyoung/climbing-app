@@ -14,6 +14,7 @@ import {
   deletePhoto,
   setPhotoCaption,
 } from '../data/notes'
+import { setContributionDeleted } from '../data/contributions'
 import { downscaleImage } from '../lib/image'
 
 function formatDate(iso) {
@@ -23,6 +24,9 @@ function formatDate(iso) {
 
 export default function NotesPhotos({ kind, id }) {
   const { user } = useAuth()
+  // Admin sees a "Remove" control on others' notes/photos (soft-delete; the
+  // server enforces the real permission via is_admin() RLS).
+  const isAdmin = !!user && user.id === import.meta.env.VITE_ADMIN_USER_ID
   const [notes, setNotes] = useState([])
   const [draft, setDraft] = useState('')
   const [savingNote, setSavingNote] = useState(false)
@@ -73,6 +77,14 @@ export default function NotesPhotos({ kind, id }) {
     setNotes(await getNotes(kind, id))
   }
 
+  // Admin moderation: soft-delete someone else's note (reversible from the
+  // admin "Recent contributions" view). Hidden behind a confirm.
+  async function adminRemoveNote(noteId) {
+    if (!confirm('Remove this note for everyone? You can undo it from the admin view.')) return
+    await setContributionDeleted('note', noteId, true)
+    setNotes(await getNotes(kind, id))
+  }
+
   async function onPickFile(e) {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -92,6 +104,15 @@ export default function NotesPhotos({ kind, id }) {
 
   async function removePhoto(photoId) {
     await deletePhoto(photoId)
+    setViewer(null)
+    setPhotos(await getPhotos(kind, id))
+  }
+
+  // Admin moderation: soft-delete someone else's photo (reversible from the
+  // admin "Recent contributions" view). Hidden behind a confirm.
+  async function adminRemovePhoto(photoId) {
+    if (!confirm('Remove this photo for everyone? You can undo it from the admin view.')) return
+    await setContributionDeleted('photo', photoId, true)
     setViewer(null)
     setPhotos(await getPhotos(kind, id))
   }
@@ -128,6 +149,11 @@ export default function NotesPhotos({ kind, id }) {
                 {user && n.authorId === user.id && (
                   <button className="note-delete" onClick={() => removeNote(n.id)}>
                     Delete
+                  </button>
+                )}
+                {isAdmin && n.authorId !== user.id && (
+                  <button className="note-delete admin" onClick={() => adminRemoveNote(n.id)}>
+                    Remove
                   </button>
                 )}
               </div>
@@ -185,6 +211,11 @@ export default function NotesPhotos({ kind, id }) {
             {user && viewer.authorId === user.id && (
               <button className="pin-delete" onClick={() => removePhoto(viewer.id)}>
                 Delete photo
+              </button>
+            )}
+            {isAdmin && viewer.authorId !== user.id && (
+              <button className="pin-delete" onClick={() => adminRemovePhoto(viewer.id)}>
+                Remove photo (admin)
               </button>
             )}
             <button className="reset" onClick={() => setViewer(null)}>

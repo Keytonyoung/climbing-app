@@ -27,7 +27,10 @@ function rowsToMap(rows) {
 /** All corrections as { [wallId]: { lng, lat, authorId, authorName } }. */
 export async function getOverrides() {
   if (isOnline() && supabase) {
-    const { data, error } = await supabase.from('wall_overrides').select('*')
+    const { data, error } = await supabase
+      .from('wall_overrides')
+      .select('*')
+      .is('deleted_at', null)
     if (!error) {
       // Resolve author names once (small table) and cache them in.
       const ids = [...new Set(data.map((r) => r.author_id).filter(Boolean))]

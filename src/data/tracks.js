@@ -34,6 +34,7 @@ export async function getTracks() {
     const { data, error } = await supabase
       .from('tracks')
       .select('*')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
     if (!error) {
       const names = await getDisplayNames(data.map((r) => r.author_id))

@@ -32,6 +32,7 @@ export async function getNotes(kind, id) {
       .select('*')
       .eq('target_kind', kind)
       .eq('target_id', id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
     if (!error) {
       // Resolve author names (no FK to embed on), then cache with names baked in.
@@ -113,6 +114,7 @@ export async function getPhotos(kind, id) {
     .select('*')
     .eq('target_kind', kind)
     .eq('target_id', id)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
   if (error) {
     console.warn('getPhotos failed:', error.message)

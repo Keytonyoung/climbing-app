@@ -3,7 +3,7 @@
 // App). This is the "tracked" half of moderation; revert/soft-delete lands later.
 
 import { useEffect, useState } from 'react'
-import { getRecentContributions } from '../data/contributions'
+import { getRecentContributions, setContributionDeleted } from '../data/contributions'
 import { routeRef } from '../data/routes'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
 
@@ -29,6 +29,7 @@ function fmt(d) {
 export default function AdminSheet({ onPick, onClose }) {
   const dismiss = useSheetDismiss(onClose)
   const [rows, setRows] = useState(null) // null = loading
+  const [busyId, setBusyId] = useState(null)
 
   useEffect(() => {
     let alive = true
@@ -37,6 +38,24 @@ export default function AdminSheet({ onPick, onClose }) {
       alive = false
     }
   }, [])
+
+  // Soft-delete or restore, then reflect it in place (no full reload).
+  async function toggleDeleted(row) {
+    setBusyId(row.id)
+    try {
+      const next = !row.deletedAt
+      await setContributionDeleted(row.kind, row.rawId, next)
+      setRows((rs) =>
+        rs.map((r) =>
+          r.id === row.id ? { ...r, deletedAt: next ? new Date().toISOString() : null } : r
+        )
+      )
+    } catch (e) {
+      console.warn('moderation failed:', e.message || e)
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   // Resolve a contribution's target to a (wallId, routeId) the map can open.
   function openTarget(target) {
@@ -57,7 +76,8 @@ export default function AdminSheet({ onPick, onClose }) {
         <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
       </header>
       <p className="detail-desc muted">
-        Everything added or changed across the app, newest first. Read-only for now.
+        Everything added or changed across the app, newest first. Remove hides a
+        contribution from everyone; Undo restores it. Nothing is permanently deleted.
       </p>
 
       {rows === null ? (
@@ -67,7 +87,7 @@ export default function AdminSheet({ onPick, onClose }) {
       ) : (
         <ul className="feed-list">
           {rows.map((r) => (
-            <li key={r.id}>
+            <li key={r.id} className={`admin-row ${r.deletedAt ? 'is-removed' : ''}`}>
               <button
                 className="feed-row"
                 onClick={() => openTarget(r.target)}
@@ -77,7 +97,17 @@ export default function AdminSheet({ onPick, onClose }) {
                   <span className="admin-kind">{KIND_LABEL[r.kind] || r.kind}</span>{' '}
                   <strong>{r.authorName}</strong> — {r.summary}
                 </span>
-                <span className="feed-sub">{fmt(r.createdAt)}</span>
+                <span className="feed-sub">
+                  {fmt(r.createdAt)}
+                  {r.deletedAt ? ' · removed' : ''}
+                </span>
+              </button>
+              <button
+                className={`admin-action ${r.deletedAt ? 'restore' : 'remove'}`}
+                onClick={() => toggleDeleted(r)}
+                disabled={busyId === r.id}
+              >
+                {busyId === r.id ? '…' : r.deletedAt ? 'Undo' : 'Remove'}
               </button>
             </li>
           ))}

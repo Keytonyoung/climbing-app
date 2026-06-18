@@ -52,6 +52,7 @@ export async function getPins() {
     const { data, error } = await supabase
       .from('pins')
       .select('*')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
     if (!error) {
       // Denormalize author names into the cache for offline attribution.

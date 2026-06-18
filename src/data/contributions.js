@@ -14,10 +14,12 @@ const PER_TABLE = 25
 
 // Each table contributes rows in a common shape: { id, kind, authorId, createdAt,
 // summary, target } where target (optional) lets the UI deep-link to a route/wall.
+// Most tables key on `id`; wall_overrides keys on `wall_id`.
 const SOURCES = [
   {
     table: 'notes',
     kind: 'note',
+    pk: 'id',
     map: (r) => ({
       summary: `Note on ${r.target_kind}: “${(r.text || '').slice(0, 60)}”`,
       target: { kind: r.target_kind, id: r.target_id },
@@ -26,6 +28,7 @@ const SOURCES = [
   {
     table: 'photos',
     kind: 'photo',
+    pk: 'id',
     map: (r) => ({
       summary: `Photo on ${r.target_kind}${r.caption ? `: “${r.caption.slice(0, 50)}”` : ''}`,
       target: { kind: r.target_kind, id: r.target_id },
@@ -34,6 +37,7 @@ const SOURCES = [
   {
     table: 'ticks',
     kind: 'tick',
+    pk: 'id',
     map: (r) => ({
       summary: `Logged an ascent${r.style ? ` (${r.style})` : ''}`,
       target: { kind: 'route', id: r.route_id },
@@ -42,19 +46,25 @@ const SOURCES = [
   {
     table: 'pins',
     kind: 'pin',
+    pk: 'id',
     map: (r) => ({ summary: `Pin: ${r.category}${r.label ? ` — ${r.label}` : ''}` }),
   },
   {
     table: 'tracks',
     kind: 'track',
+    pk: 'id',
     map: (r) => ({ summary: `Trail${r.name ? `: ${r.name}` : ''}` }),
   },
   {
     table: 'wall_overrides',
     kind: 'override',
+    pk: 'wall_id',
     map: (r) => ({ summary: 'Moved a wall location', target: { kind: 'wall', id: r.wall_id } }),
   },
 ]
+
+// kind -> { table, pk } for the moderation action below.
+const BY_KIND = Object.fromEntries(SOURCES.map((s) => [s.kind, s]))
 
 /**
  * Recent contributions across all shared tables, newest first. Read-only.
@@ -75,10 +85,12 @@ export async function getRecentContributions({ limit = 60 } = {}) {
         return []
       }
       return (data || []).map((r) => ({
-        id: `${src.kind}:${r.id}`,
+        id: `${src.kind}:${r[src.pk]}`,
         kind: src.kind,
+        rawId: r[src.pk], // primary-key value, for the moderation action
         authorId: r.author_id,
         createdAt: r.created_at,
+        deletedAt: r.deleted_at || null,
         ...src.map(r),
       }))
     })
@@ -91,4 +103,19 @@ export async function getRecentContributions({ limit = 60 } = {}) {
 
   const names = await getDisplayNames(merged.map((r) => r.authorId))
   return merged.map((r) => ({ ...r, authorName: names[r.authorId] || 'a climber' }))
+}
+
+/**
+ * Admin moderation: soft-delete a contribution (deleted=true) or restore it
+ * (deleted=false). Server-side RLS enforces that only the admin can do this —
+ * this just stamps/clears deleted_at; nothing is hard-deleted.
+ */
+export async function setContributionDeleted(kind, rawId, deleted) {
+  const src = BY_KIND[kind]
+  if (!src || !supabase) return
+  const { error } = await supabase
+    .from(src.table)
+    .update({ deleted_at: deleted ? new Date().toISOString() : null })
+    .eq(src.pk, rawId)
+  if (error) throw error
 }

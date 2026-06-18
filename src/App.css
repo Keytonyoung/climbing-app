@@ -744,6 +744,42 @@ html, body, #root {
   color: var(--color-primary);
   margin-right: 2px;
 }
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-row .feed-row {
+  flex: 1;
+  min-width: 0;
+}
+.admin-row.is-removed .feed-row {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+.admin-action {
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.admin-action.remove {
+  color: #c0392b;
+  background: transparent;
+  border-color: rgba(192, 57, 43, 0.4);
+}
+.admin-action.restore {
+  color: var(--color-primary);
+  background: transparent;
+  border-color: var(--color-primary);
+}
+.admin-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 
 /* Route ascent log (ticks) */
 .tick-count {

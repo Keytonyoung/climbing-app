@@ -36,6 +36,7 @@ export async function getRouteTicks(routeId) {
       .from('ticks')
       .select('*')
       .eq('route_id', routeId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
     if (!error) {
       const names = await getDisplayNames(data.map((r) => r.author_id))
@@ -94,7 +95,12 @@ export async function getRecentTicks({ mine = false, userId = null, limit = 50 }
       .slice(0, limit)
       .map(cacheToTick)
   }
-  let query = supabase.from('ticks').select('*').order('created_at', { ascending: false }).limit(limit)
+  let query = supabase
+    .from('ticks')
+    .select('*')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(limit)
   if (mine && userId) query = query.eq('author_id', userId)
   const { data, error } = await query
   if (error) {

@@ -13,8 +13,18 @@
 create table if not exists public.profiles (
   id           uuid primary key references auth.users (id) on delete cascade,
   display_name text,
+  role         text not null default 'user',   -- 'user' | 'admin' (moderation)
   created_at   timestamptz not null default now()
 );
+
+-- True when the current user is an admin. Used by the soft-delete / revert
+-- policies below so only admins can hide or restore others' contributions.
+create or replace function public.is_admin()
+returns boolean language sql stable security definer as $$
+  select exists (
+    select 1 from public.profiles where id = auth.uid() and role = 'admin'
+  );
+$$;
 
 -- Auto-create a profile row when a new auth user signs up.
 create or replace function public.handle_new_user()
@@ -44,7 +54,8 @@ create table if not exists public.pins (
   lng        double precision not null,
   lat        double precision not null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  deleted_at timestamptz                       -- soft-delete (admin moderation)
 );
 
 -- =========================================================================
@@ -60,7 +71,8 @@ create table if not exists public.tracks (
   coordinates  jsonb not null,              -- [[lng,lat], ...]
   length_m     double precision,
   created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
+  updated_at   timestamptz not null default now(),
+  deleted_at   timestamptz                  -- soft-delete (admin moderation)
 );
 
 -- =========================================================================
@@ -74,7 +86,8 @@ create table if not exists public.notes (
   target_id   text not null,                -- OpenBeta uuid of the route/wall
   text        text not null default '',
   created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
+  updated_at  timestamptz not null default now(),
+  deleted_at  timestamptz                   -- soft-delete (admin moderation)
 );
 create index if not exists notes_target_idx on public.notes (target_kind, target_id);
 
@@ -87,7 +100,9 @@ create table if not exists public.photos (
   target_kind  text not null,               -- 'route' | 'wall'
   target_id    text not null,
   storage_path text not null,               -- path within the 'photos' bucket
-  created_at   timestamptz not null default now()
+  caption      text,                         -- optional, owner-editable
+  created_at   timestamptz not null default now(),
+  deleted_at   timestamptz                   -- soft-delete (admin moderation)
 );
 create index if not exists photos_target_idx on public.photos (target_kind, target_id);
 
@@ -110,9 +125,12 @@ do $$
 declare t text;
 begin
   foreach t in array array['pins','tracks','notes','photos'] loop
-    execute format('create policy "%1$s read"   on public.%1$s for select using (true);', t);
+    -- Read: world-readable, but soft-deleted rows are hidden from non-admins.
+    execute format('create policy "%1$s read"   on public.%1$s for select using (deleted_at is null or public.is_admin());', t);
     execute format('create policy "%1$s insert" on public.%1$s for insert with check (auth.uid() = author_id);', t);
+    -- Update: owners edit their own rows; admins may update any (to set/clear deleted_at).
     execute format('create policy "%1$s update" on public.%1$s for update using (auth.uid() = author_id);', t);
+    execute format('create policy "%1$s admin update" on public.%1$s for update using (public.is_admin()) with check (public.is_admin());', t);
     execute format('create policy "%1$s delete" on public.%1$s for delete using (auth.uid() = author_id);', t);
   end loop;
 end $$;
@@ -128,10 +146,11 @@ create table if not exists public.wall_overrides (
   lng        double precision not null,
   lat        double precision not null,
   author_id  uuid not null references auth.users (id) on delete set null,
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  deleted_at timestamptz                     -- soft-delete (admin moderation)
 );
 alter table public.wall_overrides enable row level security;
-create policy "wall_overrides read"   on public.wall_overrides for select using (true);
+create policy "wall_overrides read"   on public.wall_overrides for select using (deleted_at is null or public.is_admin());
 create policy "wall_overrides insert" on public.wall_overrides for insert
   with check (auth.role() = 'authenticated' and auth.uid() = author_id);
 -- Any signed-in user may overwrite anyone's correction (last-write-wins).
@@ -154,14 +173,18 @@ create table if not exists public.ticks (
   note       text not null default '',
   climbed_on date,
   is_public  boolean not null default true,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  deleted_at timestamptz                     -- soft-delete (admin moderation)
 );
 create index if not exists ticks_route_idx on public.ticks (route_id);
 create index if not exists ticks_author_idx on public.ticks (author_id);
 alter table public.ticks enable row level security;
-create policy "ticks read"   on public.ticks for select using (is_public or auth.uid() = author_id);
+create policy "ticks read"   on public.ticks for select using (
+  public.is_admin() or ((is_public or auth.uid() = author_id) and deleted_at is null)
+);
 create policy "ticks insert" on public.ticks for insert with check (auth.uid() = author_id);
 create policy "ticks update" on public.ticks for update using (auth.uid() = author_id);
+create policy "ticks admin update" on public.ticks for update using (public.is_admin()) with check (public.is_admin());
 create policy "ticks delete" on public.ticks for delete using (auth.uid() = author_id);
 
 -- =========================================================================
