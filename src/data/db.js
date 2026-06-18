@@ -6,7 +6,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 5
+const DB_VERSION = 6
 
 let dbPromise = null
 
@@ -38,6 +38,11 @@ export function getDB() {
         // v5: cache of wall-location corrections (keyed by OpenBeta wall id).
         if (oldVersion < 5) {
           db.createObjectStore('overrides', { keyPath: 'wall_id' })
+        }
+        // v6: cache of logged ascents (ticks), indexed by route.
+        if (oldVersion < 6) {
+          const ticks = db.createObjectStore('ticks', { keyPath: 'id' })
+          ticks.createIndex('route_id', 'route_id')
         }
       },
     })

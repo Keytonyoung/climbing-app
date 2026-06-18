@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import NotesPhotos from './NotesPhotos'
+import RouteLog from './RouteLog'
 import { shareUrl, shareOrCopy } from '../lib/share'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
 
@@ -54,6 +55,8 @@ export default function RouteDetail({ route, wall, onBack, onClose }) {
       <button className="directions-btn" onClick={share}>
         {copied ? '✓ Link copied' : '🔗 Share route'}
       </button>
+
+      <RouteLog route={route} wallId={wall.id} />
 
       {route.description && (
         <section className="detail-section">

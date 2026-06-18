@@ -141,6 +141,30 @@ create policy "wall_overrides delete" on public.wall_overrides for delete
   using (auth.role() = 'authenticated');
 
 -- =========================================================================
+-- ticks: a logged ascent ("I climbed this"). Drives the tick count per route
+-- and the future activity feed. Public by default; private ticks visible only
+-- to their author. LOW-risk contribution — any signed-in user may log.
+-- =========================================================================
+create table if not exists public.ticks (
+  id         uuid primary key,
+  author_id  uuid not null references auth.users (id) on delete cascade,
+  route_id   text not null,
+  wall_id    text,
+  style      text,           -- onsight | flash | redpoint | repeat | tr
+  note       text not null default '',
+  climbed_on date,
+  is_public  boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create index if not exists ticks_route_idx on public.ticks (route_id);
+create index if not exists ticks_author_idx on public.ticks (author_id);
+alter table public.ticks enable row level security;
+create policy "ticks read"   on public.ticks for select using (is_public or auth.uid() = author_id);
+create policy "ticks insert" on public.ticks for insert with check (auth.uid() = author_id);
+create policy "ticks update" on public.ticks for update using (auth.uid() = author_id);
+create policy "ticks delete" on public.ticks for delete using (auth.uid() = author_id);
+
+-- =========================================================================
 -- Storage bucket for photos (public read). If the bucket already exists this
 -- is a no-op. Object-level write rules are added in the runbook via the
 -- dashboard, or uncomment the policies below.
