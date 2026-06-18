@@ -39,6 +39,7 @@ import AuthSheet from './components/AuthSheet'
 import WelcomeOverlay from './components/WelcomeOverlay'
 import SearchSheet from './components/SearchSheet'
 import FeedSheet from './components/FeedSheet'
+import AdminSheet from './components/AdminSheet'
 import FilterPanel from './components/FilterPanel'
 import WallSheet from './components/WallSheet'
 import RouteDetail from './components/RouteDetail'
@@ -114,6 +115,10 @@ export default function App() {
   const [toast, setToast] = useState(null)
   const [showSearch, setShowSearch] = useState(false)
   const [showFeed, setShowFeed] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
+  // The admin (Cole) sees a read-only "Recent contributions" view. UID lives in
+  // .env.local (VITE_ADMIN_USER_ID), never committed.
+  const isAdmin = !!user && user.id === import.meta.env.VITE_ADMIN_USER_ID
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
   const [dl, setDl] = useState(null) // offline-download state
   const [satellite, setSatellite] = useState(false)
@@ -862,6 +867,16 @@ export default function App() {
         >
           🔍
         </button>
+        {isAdmin && (
+          <button
+            className="account-btn"
+            onClick={() => { closeSheets(); setShowAdmin(true) }}
+            title="Recent contributions"
+            aria-label="Recent contributions"
+          >
+            🛡️
+          </button>
+        )}
         <button
           className={`account-btn ${user ? 'active' : ''}`}
           onClick={() => setShowAuth(true)}
@@ -1021,6 +1036,16 @@ export default function App() {
             openWallById(wallId, routeId)
           }}
           onClose={() => setShowFeed(false)}
+        />
+      )}
+
+      {showAdmin && isAdmin && (
+        <AdminSheet
+          onPick={(wallId, routeId) => {
+            setShowAdmin(false)
+            openWallById(wallId, routeId)
+          }}
+          onClose={() => setShowAdmin(false)}
         />
       )}
 
