@@ -6,12 +6,17 @@ import { supabase } from './supabase'
 import { getCurrentUser, getDisplayNames, displayName } from './auth'
 import { isOnline, cacheGetAll, cachePutMany, cachePut, cacheDelete, enqueue } from './sync'
 
-export const STYLES = ['onsight', 'flash', 'redpoint', 'repeat', 'tr']
+// Plain-language, type-agnostic ascent styles — works for sport, trad, and
+// bouldering alike, no climbing jargon. The richer onsight/flash/redpoint
+// taxonomy can come back later as an optional set if power users want it.
+export const STYLES = ['first', 'repeat']
 export const STYLE_LABELS = {
+  first: 'First time',
+  repeat: 'Repeat',
+  // Legacy values from earlier ticks still render with a friendly label.
   onsight: 'Onsight',
   flash: 'Flash',
   redpoint: 'Redpoint',
-  repeat: 'Repeat',
   tr: 'Top-rope',
 }
 

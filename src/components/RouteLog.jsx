@@ -15,7 +15,7 @@ export default function RouteLog({ route, wallId }) {
   const { user } = useAuth()
   const [ticks, setTicks] = useState([])
   const [logging, setLogging] = useState(false)
-  const [style, setStyle] = useState('redpoint')
+  const [style, setStyle] = useState('first')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [expanded, setExpanded] = useState(false) // ascent list hidden by default (keeps the phone view tidy)
