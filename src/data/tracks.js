@@ -130,6 +130,38 @@ export function getTracksForWall(wallId, tracks) {
   )
 }
 
+/**
+ * Access pins for a wall — "getting there." Trail-linked pins are the real
+ * connection (a recorded approach ties this parking/trailhead to the wall at
+ * any distance) and come first; pins within `maxMeters` are a proximity
+ * fallback for access that has no recorded trail yet. Returns
+ * [{ pin, distance, linked }] with linked pins first, then nearest.
+ */
+export function getWallAccess(wall, pins, tracks, { maxMeters = 800 } = {}) {
+  const here = [wall.lng, wall.lat]
+  // Primary: pins on a trail anchored to this wall.
+  const linkedIds = new Set()
+  for (const t of getTracksForWall(wall.id, tracks)) {
+    for (const anchor of [t.start, t.end]) {
+      if (anchor.kind === 'pin') linkedIds.add(anchor.id)
+    }
+  }
+  const out = []
+  const seen = new Set()
+  for (const p of pins) {
+    if (!linkedIds.has(p.id)) continue
+    seen.add(p.id)
+    out.push({ pin: p, distance: haversineMeters(here, [p.lng, p.lat]), linked: true })
+  }
+  // Fallback: nearby pins with no trail link yet.
+  for (const p of pins) {
+    if (seen.has(p.id)) continue
+    const distance = haversineMeters(here, [p.lng, p.lat])
+    if (distance <= maxMeters) out.push({ pin: p, distance, linked: false })
+  }
+  return out.sort((a, b) => b.linked - a.linked || a.distance - b.distance)
+}
+
 // --- Geometry helpers -----------------------------------------------------
 
 const R = 6371000 // earth radius, meters

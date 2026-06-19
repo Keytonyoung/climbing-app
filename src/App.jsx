@@ -25,6 +25,7 @@ import {
   deleteTrack,
   getTracksGeoJSON,
   getTracksForWall,
+  getWallAccess,
   nearestAnchors,
   trackLength,
   haversineMeters,
@@ -259,10 +260,15 @@ export default function App() {
         }
       }
       m.addSource('pins', { type: 'geojson', data: getPinsGeoJSON([]) })
+      // Pins are hidden at the overview and reveal once you've zoomed into a
+      // single crag (matches the wall cluster break-up at zoom 13), so the
+      // zoomed-out map stays about the climbing, not the parking.
+      const PIN_MIN_ZOOM = 13
       m.addLayer({
         id: 'pin',
         type: 'symbol',
         source: 'pins',
+        minzoom: PIN_MIN_ZOOM,
         layout: {
           'icon-image': ['concat', 'pin-', ['get', 'category']],
           'icon-size': 1,
@@ -276,6 +282,7 @@ export default function App() {
         id: 'pin-hit',
         type: 'circle',
         source: 'pins',
+        minzoom: PIN_MIN_ZOOM,
         paint: { 'circle-radius': 16, 'circle-color': '#000', 'circle-opacity': 0 },
       })
 
@@ -854,6 +861,14 @@ export default function App() {
   }
 
   const wallTracks = selectedWall ? getTracksForWall(selectedWall.id, tracks) : []
+  const wallAccess = selectedWall ? getWallAccess(selectedWall, pins, tracks) : []
+
+  // Open an access pin from the wall sheet: fly to it and show its detail,
+  // exactly as if it were tapped on the map.
+  function openAccessPin(pin) {
+    map.current?.flyTo({ center: [pin.lng, pin.lat], zoom: Math.max(map.current.getZoom(), 15) })
+    startEditPin(pin)
+  }
 
   return (
     <div id="app">
@@ -1020,7 +1035,9 @@ export default function App() {
         <WallSheet
           wall={selectedWall}
           tracks={wallTracks}
+          access={wallAccess}
           canEdit={!!user}
+          onOpenPin={openAccessPin}
           onOpenTrack={openWallTrack}
           onSelectRoute={setSelectedRoute}
           onFixLocation={startFixLocation}

@@ -6,6 +6,8 @@ import NotesPhotos from './NotesPhotos'
 import { openDirections } from '../lib/directions'
 import { shareUrl, shareOrCopy } from '../lib/share'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
+import { categoryLabel } from '../data/pins'
+import { formatDistance } from '../data/tracks'
 
 const TYPE_LABELS = {
   sport: 'Sport',
@@ -15,10 +17,21 @@ const TYPE_LABELS = {
   aid: 'Aid',
 }
 
+// List icons for access pins (the map uses its own teardrop markers).
+const CATEGORY_ICON = {
+  parking: '🅿️',
+  trailhead: '🚩',
+  water: '💧',
+  camp: '⛺',
+  other: '📍',
+}
+
 export default function WallSheet({
   wall,
   tracks = [],
+  access = [],
   canEdit,
+  onOpenPin,
   onOpenTrack,
   onSelectRoute,
   onFixLocation,
@@ -73,11 +86,29 @@ export default function WallSheet({
         )}
       </div>
 
-      {tracks.length > 0 && (
-        <div className="wall-tracks">
+      {(access.length > 0 || tracks.length > 0) && (
+        <div className="wall-access">
+          <h3 className="wall-access-title">Getting there</h3>
+          {access.map(({ pin, distance, linked }) => (
+            <button key={pin.id} className="wall-access-row" onClick={() => onOpenPin(pin)}>
+              <span className="access-icon">{CATEGORY_ICON[pin.category] || '📍'}</span>
+              <span className="access-text">
+                <span className="access-label">{pin.label || categoryLabel(pin.category)}</span>
+                <span className="access-sub">
+                  {categoryLabel(pin.category)} · {formatDistance(distance)}
+                  {linked ? ' · on approach' : ''}
+                </span>
+              </span>
+              <span className="route-chevron">›</span>
+            </button>
+          ))}
           {tracks.map((t) => (
-            <button key={t.id} className="wall-track-row" onClick={() => onOpenTrack(t)}>
-              🥾 {t.name || 'Approach trail'}
+            <button key={t.id} className="wall-access-row" onClick={() => onOpenTrack(t)}>
+              <span className="access-icon">🥾</span>
+              <span className="access-text">
+                <span className="access-label">{t.name || 'Approach trail'}</span>
+                <span className="access-sub">Recorded approach trail</span>
+              </span>
               <span className="route-chevron">›</span>
             </button>
           ))}
