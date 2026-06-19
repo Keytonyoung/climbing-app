@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext'
 import { getRecentTicks, STYLE_LABELS } from '../data/ticks'
 import { routeRef } from '../data/routes'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
+import GradePyramid from './GradePyramid'
 
 function fmtDate(d) {
   if (!d) return ''
@@ -21,7 +22,13 @@ export default function FeedSheet({ initialMode = 'all', onPick, onClose }) {
   useEffect(() => {
     let alive = true
     setTicks(null)
-    getRecentTicks({ mine: mode === 'mine', userId: user?.id }).then((t) => alive && setTicks(t))
+    // The logbook ("mine") feeds the grade pyramid, so pull the full history;
+    // the public feed stays a recent slice.
+    getRecentTicks({
+      mine: mode === 'mine',
+      userId: user?.id,
+      limit: mode === 'mine' ? 500 : 50,
+    }).then((t) => alive && setTicks(t))
     return () => {
       alive = false
     }
@@ -45,6 +52,8 @@ export default function FeedSheet({ initialMode = 'all', onPick, onClose }) {
           </button>
         </div>
       )}
+
+      {mode === 'mine' && ticks && ticks.length > 0 && <GradePyramid ticks={ticks} />}
 
       {ticks === null ? (
         <p className="detail-desc muted">Loading…</p>

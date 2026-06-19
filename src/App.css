@@ -791,6 +791,60 @@ html, body, #root {
   color: var(--color-primary);
   margin-right: 2px;
 }
+
+/* Grade pyramid (logbook "You" tab) */
+.pyramids {
+  margin: 4px 0 16px;
+}
+.pyramid-summary {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.pyramid {
+  margin-bottom: 16px;
+}
+.pyramid-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+}
+.pyramid-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pyramid-grade {
+  flex: none;
+  width: 44px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+.pyramid-bar-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.pyramid-bar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
 .admin-row {
   display: flex;
   align-items: center;
