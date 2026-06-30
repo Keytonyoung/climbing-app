@@ -4,33 +4,21 @@
 // log (route grades come from the seed via routeRef), so it needs no extra input.
 
 import { routeRef } from '../data/routes'
-import { parseYdsBase, parseVgrade } from '../data/routes'
+import { bucketGrades, hardestLabel } from '../data/pyramid'
 
-// Count DISTINCT routes per grade bucket, split by scale (YDS vs V). Repeats of
-// the same route don't inflate the pyramid — it's about routes climbed.
-function buildBuckets(ticks) {
+// Distinct routes you've sent -> their grade strings (repeats don't count
+// twice). The bucketing math itself lives in data/pyramid.js (unit-tested).
+function gradesFromTicks(ticks) {
   const seen = new Set()
-  const yds = new Map() // baseNumber -> count
-  const v = new Map() // vNumber -> count
-  let total = 0
+  const grades = []
   for (const t of ticks) {
     if (seen.has(t.routeId)) continue
     const ref = routeRef(t.routeId)
     if (!ref || !ref.grade) continue
     seen.add(t.routeId)
-    const vn = parseVgrade(ref.grade)
-    if (vn != null) {
-      v.set(vn, (v.get(vn) || 0) + 1)
-      total++
-      continue
-    }
-    const yn = parseYdsBase(ref.grade)
-    if (yn != null) {
-      yds.set(yn, (yds.get(yn) || 0) + 1)
-      total++
-    }
+    grades.push(ref.grade)
   }
-  return { yds, v, total }
+  return grades
 }
 
 // One pyramid for a scale: rows hardest-at-top, bars centered so the silhouette
@@ -60,18 +48,9 @@ function Pyramid({ title, buckets, label }) {
 }
 
 export default function GradePyramid({ ticks }) {
-  const { yds, v, total } = buildBuckets(ticks)
+  const { yds, v, total } = bucketGrades(gradesFromTicks(ticks))
   if (total === 0) return null
-
-  // Hardest sent, for the summary line.
-  const hardestYds = yds.size ? Math.max(...yds.keys()) : null
-  const hardestV = v.size ? Math.max(...v.keys()) : null
-  const hardest = [
-    hardestYds != null ? `5.${hardestYds}` : null,
-    hardestV != null ? `V${hardestV}` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  const hardest = hardestLabel({ yds, v })
 
   return (
     <section className="pyramids">

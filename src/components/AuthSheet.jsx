@@ -17,7 +17,10 @@ export default function AuthSheet({ onClose, onShowHelp }) {
   const [savingName, setSavingName] = useState(false)
   const [savedName, setSavedName] = useState(false)
 
+  // Seed the editable name field from the signed-in user (and re-seed if the
+  // user changes). Intentional prop->state sync.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user) setName(displayName(user))
   }, [user])
 

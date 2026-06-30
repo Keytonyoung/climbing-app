@@ -21,6 +21,8 @@ export default function FeedSheet({ initialMode = 'all', onPick, onClose }) {
 
   useEffect(() => {
     let alive = true
+    // Show the loading state while we refetch for the new tab/user.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTicks(null)
     // The logbook ("mine") feeds the grade pyramid, so pull the full history;
     // the public feed stays a recent slice.

@@ -357,6 +357,8 @@ export default function App() {
       getTracks().then(setTracks)
       getOverrides().then(setOverrides)
     })
+    // Mount-once map setup; handlers close over refs, not reactive values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Re-acquire the screen wake lock when returning to the tab mid-recording.

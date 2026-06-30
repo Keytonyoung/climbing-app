@@ -65,14 +65,33 @@ export async function outboxCount() {
   return db.count('outbox')
 }
 
-/** Drain queued writes to Supabase, oldest first. Stops on the first failure
- *  (e.g. still offline) so nothing is lost — it retries next time. */
+// A write that keeps failing is "poison" — after this many attempts we set it
+// aside so it can't wedge every later write behind it forever.
+export const MAX_ATTEMPTS = 5
+
+/**
+ * Pure decision for a failed outbox op (extracted so it's unit-testable):
+ * quarantine it once it has failed MAX_ATTEMPTS times, otherwise pause the drain
+ * and retry it next flush. Returns { action, record }.
+ */
+export function nextOutboxState(item, errorMessage) {
+  const attempts = (item.attempts || 0) + 1
+  if (attempts >= MAX_ATTEMPTS) {
+    return { action: 'quarantine', record: { ...item, attempts, failed: true, lastError: errorMessage } }
+  }
+  return { action: 'pause', record: { ...item, attempts } }
+}
+
+/** Drain queued writes to Supabase, oldest first. A transient failure (e.g.
+ *  still offline) stops the drain so nothing is lost and it retries next time;
+ *  a write that fails MAX_ATTEMPTS times is quarantined (marked failed and
+ *  skipped) so it can't block the rest of the queue indefinitely. */
 export async function flush() {
   if (!isOnline() || !supabase) return 0
   const db = await getDB()
-  const items = (await db.getAll('outbox')).sort((a, b) =>
-    a.queuedAt.localeCompare(b.queuedAt)
-  )
+  const items = (await db.getAll('outbox'))
+    .filter((it) => !it.failed)
+    .sort((a, b) => a.queuedAt.localeCompare(b.queuedAt))
   let synced = 0
   for (const item of items) {
     try {
@@ -80,11 +99,25 @@ export async function flush() {
       await db.delete('outbox', item.id)
       synced++
     } catch (e) {
-      console.warn('flush stopped:', e.message)
+      const { action, record } = nextOutboxState(item, e.message)
+      await db.put('outbox', record)
+      if (action === 'quarantine') {
+        // Set aside and keep going — don't let one bad op block the queue.
+        console.warn(`flush: quarantined ${item.table}/${item.op}:`, e.message)
+        continue
+      }
+      // Likely transient (offline / token refresh) — stop so order is preserved.
+      console.warn('flush paused:', e.message)
       break
     }
   }
   return synced
+}
+
+/** Queued writes that were quarantined after repeated failures (for surfacing). */
+export async function failedOps() {
+  const db = await getDB()
+  return (await db.getAll('outbox')).filter((it) => it.failed)
 }
 
 async function applyOp({ table, op, payload }) {
