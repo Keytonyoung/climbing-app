@@ -25,6 +25,17 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            // Photos served from Supabase Storage — cache the bytes when viewed
+            // online so they render offline at the crag (mirrors the tile cache).
+            urlPattern: /\/storage\/v1\/object\/public\/photos\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'supabase-photos',
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
       },
       manifest: {

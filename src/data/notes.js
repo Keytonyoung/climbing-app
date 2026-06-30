@@ -103,30 +103,50 @@ export async function deleteNote(noteId) {
 const BUCKET = 'photos'
 
 function publicUrl(path) {
+  // Pure string builder (no network), so it resolves offline too; the bytes at
+  // that URL are served from the service-worker cache when there's no signal.
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
-/** A target's photos, newest first, each with a public image URL. */
-export async function getPhotos(kind, id) {
-  if (!supabase) return []
-  const { data, error } = await supabase
-    .from('photos')
-    .select('*')
-    .eq('target_kind', kind)
-    .eq('target_id', id)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-  if (error) {
-    console.warn('getPhotos failed:', error.message)
-    return []
-  }
-  return data.map((p) => ({
+function rowToPhoto(p) {
+  return {
     id: p.id,
     authorId: p.author_id,
     storagePath: p.storage_path,
     caption: p.caption || '',
     url: publicUrl(p.storage_path),
-  }))
+  }
+}
+
+/** A target's photos, newest first, each with a public image URL. Online:
+ *  fetch + refresh the offline cache. Offline: serve from cache so photos you
+ *  viewed online are still there at the crag. */
+export async function getPhotos(kind, id) {
+  if (!supabase) return []
+  if (isOnline()) {
+    const { data, error } = await supabase
+      .from('photos')
+      .select('*')
+      .eq('target_kind', kind)
+      .eq('target_id', id)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+    if (!error) {
+      // Refresh this target's slice of the cache (drop stale, add fresh).
+      const freshIds = new Set(data.map((r) => r.id))
+      const stale = (await cacheGetAll('photos')).filter(
+        (r) => r.target_kind === kind && r.target_id === id && !freshIds.has(r.id)
+      )
+      for (const s of stale) await cacheDelete('photos', s.id)
+      await cachePutMany('photos', data)
+      return data.map(rowToPhoto)
+    }
+    console.warn('getPhotos online failed, using cache:', error.message)
+  }
+  return (await cacheGetAll('photos'))
+    .filter((r) => r.target_kind === kind && r.target_id === id && !r.deleted_at)
+    .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
+    .map(rowToPhoto)
 }
 
 /** Set/clear the caption on a photo (owner only, per RLS). */
@@ -165,4 +185,5 @@ export async function deletePhoto(photoId) {
   if (data?.storage_path) await supabase.storage.from(BUCKET).remove([data.storage_path])
   const { error } = await supabase.from('photos').delete().eq('id', photoId)
   if (error) throw error
+  await cacheDelete('photos', photoId)
 }

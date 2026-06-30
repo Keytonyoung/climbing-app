@@ -31,11 +31,46 @@ export function displayName(user) {
   return user.user_metadata?.display_name || user.email?.split('@')[0] || 'Climber'
 }
 
-/** Current signed-in user (or null). */
+// Last-known user, persisted locally so the app stays "signed in" with no
+// signal. Without this, a background token refresh that fails offline fires a
+// spurious SIGNED_OUT and hides every edit control at the crag — the writes
+// themselves queue in the outbox and don't need a live token.
+const USER_CACHE_KEY = 'cachedUser'
+
+export function cacheUser(user) {
+  try {
+    if (user) {
+      const { id, email, user_metadata } = user
+      localStorage.setItem(USER_CACHE_KEY, JSON.stringify({ id, email, user_metadata }))
+    } else {
+      localStorage.removeItem(USER_CACHE_KEY)
+    }
+  } catch {
+    /* storage may be unavailable; non-fatal */
+  }
+}
+
+export function getCachedUser() {
+  try {
+    const s = localStorage.getItem(USER_CACHE_KEY)
+    return s ? JSON.parse(s) : null
+  } catch {
+    return null
+  }
+}
+
+/** Current signed-in user (or null). Falls back to the cached identity when
+ *  offline so author stamping and the UI keep working with no signal. */
 export async function getCurrentUser() {
   if (!isSupabaseConfigured) return null
   const { data } = await supabase.auth.getSession()
-  return data.session?.user ?? null
+  const user = data.session?.user ?? null
+  if (user) {
+    cacheUser(user)
+    return user
+  }
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return getCachedUser()
+  return null
 }
 
 /** Subscribe to sign-in/out. Returns an unsubscribe fn. */
@@ -58,6 +93,7 @@ export async function sendMagicLink(email) {
 }
 
 export async function signOut() {
+  cacheUser(null)
   if (isSupabaseConfigured) await supabase.auth.signOut()
 }
 

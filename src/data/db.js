@@ -6,7 +6,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 7
+const DB_VERSION = 8
 
 let dbPromise = null
 
@@ -48,6 +48,12 @@ export function getDB() {
         // Storage (see notes.js), so the IndexedDB copy is no longer used.
         if (oldVersion < 7 && db.objectStoreNames.contains('photos')) {
           db.deleteObjectStore('photos')
+        }
+        // v8: re-add 'photos' as an offline READ CACHE of Supabase photo rows
+        // (different purpose than the old v3 store) so the photo list survives
+        // offline; the image bytes are cached by the service worker.
+        if (oldVersion < 8 && !db.objectStoreNames.contains('photos')) {
+          db.createObjectStore('photos', { keyPath: 'id' })
         }
       },
     })

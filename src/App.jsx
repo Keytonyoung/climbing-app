@@ -872,6 +872,7 @@ export default function App() {
 
   return (
     <div id="app">
+      {offline && <div className="offline-bar">Offline — showing saved data; changes sync later</div>}
       <header id="top-bar">
         <h1>Western Slope Climbing</h1>
         <button
@@ -1085,8 +1086,6 @@ export default function App() {
           }}
         />
       )}
-
-      {offline && <div className="offline-bar">Offline — showing saved data; changes sync later</div>}
 
       {toast && <div className="toast">{toast}</div>}
 

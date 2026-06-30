@@ -2,7 +2,7 @@
 // useAuth(). Keeps the current user in sync with Supabase's session.
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getCurrentUser, onAuthChange } from '../data/auth'
+import { getCurrentUser, onAuthChange, cacheUser } from '../data/auth'
 
 const AuthContext = createContext({ user: null, ready: false })
 
@@ -17,7 +17,14 @@ export function AuthProvider({ children }) {
       setUser(u)
       setReady(true)
     })
-    const unsub = onAuthChange((u) => mounted && setUser(u))
+    const unsub = onAuthChange((u) => {
+      if (!mounted) return
+      // A dropped-signal token refresh fires a spurious SIGNED_OUT; ignore it
+      // while offline so the user stays signed in and can keep editing.
+      if (!u && typeof navigator !== 'undefined' && !navigator.onLine) return
+      cacheUser(u)
+      setUser(u)
+    })
     return () => {
       mounted = false
       unsub()

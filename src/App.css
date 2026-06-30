@@ -735,11 +735,7 @@ html, body, #root {
 
 /* Offline indicator bar */
 .offline-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 4;
+  flex-shrink: 0;
   text-align: center;
   font-size: 12px;
   font-weight: 600;
