@@ -205,3 +205,19 @@ export function getFilteredCounts(filter) {
     routeCount: walls.reduce((n, w) => n + w.routes.length, 0),
   }
 }
+
+/**
+ * Wall + route ids whose wall falls inside a lng/lat bounding box. Used by
+ * "Save area offline" to know which notes/photos to prefetch for the area.
+ */
+export function getAreaTargets({ west, south, east, north }) {
+  const wallIds = new Set()
+  const routeIds = new Set()
+  for (const w of walls()) {
+    if (w.lng >= west && w.lng <= east && w.lat >= south && w.lat <= north) {
+      wallIds.add(w.id)
+      for (const r of w.routes) routeIds.add(r.id)
+    }
+  }
+  return { wallIds, routeIds }
+}

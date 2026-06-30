@@ -6,6 +6,7 @@ import {
   getWall,
   getWallsGeoJSON,
   getFilteredCounts,
+  getAreaTargets,
   isDefaultFilter,
   DEFAULT_FILTER,
 } from './data/routes'
@@ -34,6 +35,7 @@ import { useAuth } from './auth/AuthContext'
 import { displayName } from './data/auth'
 import { initSync } from './data/sync'
 import { getOverrides, setOverride, resetOverride } from './data/overrides'
+import { prefetchBeta } from './data/notes'
 import { downloadArea } from './lib/tiles'
 import { useSheetDismiss } from './lib/useSheetDismiss'
 import AuthSheet from './components/AuthSheet'
@@ -789,11 +791,23 @@ export default function App() {
 
   async function downloadThisArea() {
     if (!map.current || dl?.running) return
-    setDl({ running: true, done: 0, total: 0 })
+    setDl({ running: true, phase: 'tiles', done: 0, total: 0 })
     try {
+      // 1. Map tiles for the viewport.
       await downloadArea(map.current, {
-        onProgress: (done, total) => setDl({ running: true, done, total }),
+        onProgress: (done, total) => setDl({ running: true, phase: 'tiles', done, total }),
       })
+      // 2. All beta (notes + photos) for the walls in view, so the area is
+      //    fully usable offline without opening each route first.
+      setDl({ running: true, phase: 'beta' })
+      const b = map.current.getBounds()
+      const { wallIds, routeIds } = getAreaTargets({
+        west: b.getWest(),
+        south: b.getSouth(),
+        east: b.getEast(),
+        north: b.getNorth(),
+      })
+      await prefetchBeta(wallIds, routeIds)
       setDl({ running: false, finished: true })
       setTimeout(() => setDl(null), 3000)
     } catch (e) {
@@ -806,7 +820,9 @@ export default function App() {
     ? '⬇ Save area offline'
     : dl.finished
       ? 'Saved offline ✓'
-      : `Saving… ${dl.done}/${dl.total || '…'}`
+      : dl.phase === 'beta'
+        ? 'Saving notes & photos…'
+        : `Saving map… ${dl.done}/${dl.total || '…'}`
 
   const counts = getFilteredCounts(filter)
   const filtered = !isDefaultFilter(filter)

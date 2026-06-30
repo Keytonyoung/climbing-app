@@ -149,6 +149,52 @@ export async function getPhotos(kind, id) {
     .map(rowToPhoto)
 }
 
+/**
+ * Prefetch ALL beta (notes + photos) for a downloaded area so it's fully usable
+ * offline without having opened each route first. Caches note/photo ROWS for
+ * the area's targets and fetches each photo's image BYTES (the service worker
+ * caches them, see vite.config.js). Returns counts.
+ *
+ * The tables are small (trusted group), so we fetch them whole and filter
+ * client-side — avoids giant `.in(routeIds)` queries. When the data grows, add
+ * a server-side area key and query by it instead.
+ */
+export async function prefetchBeta(wallIds, routeIds, { onProgress } = {}) {
+  if (!supabase || !isOnline()) return { notes: 0, photos: 0 }
+  const inArea = (r) =>
+    (r.target_kind === 'wall' && wallIds.has(r.target_id)) ||
+    (r.target_kind === 'route' && routeIds.has(r.target_id))
+
+  // Notes (with author names denormalized for offline display, like getNotes).
+  const { data: allNotes } = await supabase.from('notes').select('*').is('deleted_at', null)
+  const notes = (allNotes || []).filter(inArea)
+  const authorIds = [...new Set(notes.map((n) => n.author_id))]
+  const names = {}
+  if (authorIds.length) {
+    const { data: profs } = await supabase.from('profiles').select('id, display_name').in('id', authorIds)
+    for (const p of profs || []) names[p.id] = p.display_name
+  }
+  await cachePutMany('notes', notes.map((n) => ({ ...n, author_name: names[n.author_id] || 'Climber' })))
+
+  // Photos: cache rows, then fetch the image bytes so the SW stores them.
+  const { data: allPhotos } = await supabase.from('photos').select('*').is('deleted_at', null)
+  const photos = (allPhotos || []).filter(inArea)
+  await cachePutMany('photos', photos)
+  let done = 0
+  await Promise.all(
+    photos.map(async (p) => {
+      try {
+        await fetch(publicUrl(p.storage_path), { mode: 'cors' })
+      } catch {
+        /* individual image failures are non-fatal */
+      }
+      onProgress?.(++done, photos.length)
+    })
+  )
+
+  return { notes: notes.length, photos: photos.length }
+}
+
 /** Set/clear the caption on a photo (owner only, per RLS). */
 export async function setPhotoCaption(photoId, caption) {
   if (!supabase) return
