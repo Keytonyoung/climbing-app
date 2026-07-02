@@ -108,3 +108,22 @@ export async function updateDisplayName(name) {
   const { data } = await supabase.auth.getUser()
   if (data.user) await supabase.from('profiles').update({ display_name: trimmed }).eq('id', data.user.id)
 }
+
+/** Read the current user's marketing-email opt-in (defaults false). */
+export async function getMarketingOptIn() {
+  if (!isSupabaseConfigured) return false
+  const user = await getCurrentUser()
+  if (!user) return false
+  const { data } = await supabase.from('profiles').select('marketing_opt_in').eq('id', user.id).single()
+  return !!data?.marketing_opt_in
+}
+
+/** Set the current user's marketing-email opt-in (consented, separate from the
+ *  transactional auth email — see growth plan §11e). */
+export async function setMarketingOptIn(optIn) {
+  if (!isSupabaseConfigured) throw new Error('Backend not configured')
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Sign in first.')
+  const { error } = await supabase.from('profiles').update({ marketing_opt_in: !!optIn }).eq('id', user.id)
+  if (error) throw error
+}

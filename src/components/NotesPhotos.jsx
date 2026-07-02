@@ -15,6 +15,8 @@ import {
   setPhotoCaption,
 } from '../data/notes'
 import { setContributionDeleted } from '../data/contributions'
+import { reportContent } from '../data/reports'
+import { track, EVENTS } from '../lib/analytics'
 import { downscaleImage } from '../lib/image'
 
 function formatDate(iso) {
@@ -57,12 +59,24 @@ export default function NotesPhotos({ kind, id }) {
     }
   }, [kind, id])
 
+  // Flag someone else's note/photo for moderation (signed-in, non-owner).
+  async function report(targetKind, targetId) {
+    if (!confirm('Report this to the moderators as inappropriate or inaccurate?')) return
+    try {
+      await reportContent(targetKind, targetId)
+      alert('Thanks — reported. We’ll take a look.')
+    } catch (e) {
+      alert(`Couldn’t report: ${e.message || e}`)
+    }
+  }
+
   async function postNote() {
     if (!draft.trim()) return
     setSavingNote(true)
     setNoteError(null)
     try {
       await addNote(kind, id, draft)
+      track(EVENTS.CONTRIBUTION_CREATED, { type: 'note' })
       setDraft('')
       setNotes(await getNotes(kind, id))
     } catch (e) {
@@ -94,6 +108,7 @@ export default function NotesPhotos({ kind, id }) {
     try {
       const blob = await downscaleImage(file)
       await addPhoto(kind, id, blob)
+      track(EVENTS.CONTRIBUTION_CREATED, { type: 'photo' })
       setPhotos(await getPhotos(kind, id))
     } catch (err) {
       setPhotoError(`Couldn't add that photo: ${err.message || err}`)
@@ -156,6 +171,11 @@ export default function NotesPhotos({ kind, id }) {
                     Remove
                   </button>
                 )}
+                {user && n.authorId !== user.id && !isAdmin && (
+                  <button className="note-report" onClick={() => report('note', n.id)}>
+                    Report
+                  </button>
+                )}
               </div>
               <p className="note-text">{n.text}</p>
             </li>
@@ -216,6 +236,11 @@ export default function NotesPhotos({ kind, id }) {
             {isAdmin && viewer.authorId !== user.id && (
               <button className="pin-delete" onClick={() => adminRemovePhoto(viewer.id)}>
                 Remove photo (admin)
+              </button>
+            )}
+            {user && viewer.authorId !== user.id && !isAdmin && (
+              <button className="reset" onClick={() => report('photo', viewer.id)}>
+                Report photo
               </button>
             )}
             <button className="reset" onClick={() => setViewer(null)}>

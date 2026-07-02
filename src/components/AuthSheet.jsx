@@ -3,7 +3,14 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import { sendMagicLink, signOut, displayName, updateDisplayName } from '../data/auth'
+import {
+  sendMagicLink,
+  signOut,
+  displayName,
+  updateDisplayName,
+  getMarketingOptIn,
+  setMarketingOptIn,
+} from '../data/auth'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
 
 export default function AuthSheet({ onClose, onShowHelp }) {
@@ -16,6 +23,7 @@ export default function AuthSheet({ onClose, onShowHelp }) {
   const [name, setName] = useState('')
   const [savingName, setSavingName] = useState(false)
   const [savedName, setSavedName] = useState(false)
+  const [optIn, setOptIn] = useState(false)
 
   // Seed the editable name field from the signed-in user (and re-seed if the
   // user changes). Intentional prop->state sync.
@@ -23,6 +31,25 @@ export default function AuthSheet({ onClose, onShowHelp }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user) setName(displayName(user))
   }, [user])
+
+  // Load the marketing opt-in state for the signed-in user.
+  useEffect(() => {
+    let alive = true
+    if (user) getMarketingOptIn().then((v) => alive && setOptIn(v))
+    return () => {
+      alive = false
+    }
+  }, [user])
+
+  async function toggleOptIn(next) {
+    setOptIn(next) // optimistic
+    try {
+      await setMarketingOptIn(next)
+    } catch (e) {
+      setOptIn(!next) // revert on failure
+      setError(e.message || String(e))
+    }
+  }
 
   async function saveName() {
     setSavingName(true)
@@ -79,6 +106,10 @@ export default function AuthSheet({ onClose, onShowHelp }) {
           >
             {savedName ? 'Saved ✓' : savingName ? 'Saving…' : 'Save name'}
           </button>
+          <label className="opt-in-row">
+            <input type="checkbox" checked={optIn} onChange={(e) => toggleOptIn(e.target.checked)} />
+            <span>Email me occasional updates (new areas, features). No spam, unsubscribe anytime.</span>
+          </label>
           <button className="reset" onClick={async () => { await signOut(); onClose() }}>
             Sign out
           </button>
@@ -127,7 +158,7 @@ export default function AuthSheet({ onClose, onShowHelp }) {
 
       <footer className="auth-footer">
         <button className="link-btn" onClick={onShowHelp}>Help &amp; safety</button>
-        <a className="link-btn" href="mailto:keytonyoung@gmail.com?subject=Western%20Slope%20Climbing%20feedback">
+        <a className="link-btn" href="mailto:keytonyoung@gmail.com?subject=Cragward%20feedback">
           Send feedback
         </a>
       </footer>

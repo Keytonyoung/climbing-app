@@ -356,6 +356,28 @@ html, body, #root {
   color: var(--color-text-muted);
   font-size: 12px;
 }
+.note-report {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.opt-in-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  cursor: pointer;
+}
+.opt-in-row input {
+  margin-top: 2px;
+  flex: none;
+}
 .note-delete {
   margin-left: auto;
   font-size: 12px;
