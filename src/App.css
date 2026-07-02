@@ -378,6 +378,16 @@ html, body, #root {
   margin-top: 2px;
   flex: none;
 }
+.sensitive-note {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
 .note-delete {
   margin-left: auto;
   font-size: 12px;

@@ -37,6 +37,7 @@ function rowToPin(r) {
     category: r.category,
     label: r.label,
     notes: r.notes,
+    sensitive: !!r.sensitive,
     lng: r.lng,
     lat: r.lat,
     authorId: r.author_id,
@@ -68,7 +69,7 @@ export async function getPins() {
 }
 
 /** Create a pin (requires sign-in). Writes through cache; queues if offline. */
-export async function addPin({ category, label, notes, lng, lat }) {
+export async function addPin({ category, label, notes, lng, lat, sensitive }) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Sign in to add a pin.')
   const now = new Date().toISOString()
@@ -78,6 +79,7 @@ export async function addPin({ category, label, notes, lng, lat }) {
     category: category || DEFAULT_CATEGORY,
     label: label || '',
     notes: notes || '',
+    sensitive: !!sensitive,
     lng,
     lat,
     created_at: now,
@@ -101,6 +103,7 @@ export async function updatePin(pin) {
     category: pin.category,
     label: pin.label,
     notes: pin.notes,
+    sensitive: !!pin.sensitive,
     lng: pin.lng,
     lat: pin.lat,
     updated_at: new Date().toISOString(),

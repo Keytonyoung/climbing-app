@@ -10,9 +10,10 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
   const [category, setCategory] = useState(pin.category)
   const [label, setLabel] = useState(pin.label || '')
   const [notes, setNotes] = useState(pin.notes || '')
+  const [sensitive, setSensitive] = useState(!!pin.sensitive)
 
   const dismiss = useSheetDismiss(onCancel)
-  const save = () => onSave({ ...pin, category, label: label.trim(), notes: notes.trim() })
+  const save = () => onSave({ ...pin, category, label: label.trim(), notes: notes.trim(), sensitive })
   const editable = isNew || mine
 
   if (!editable) {
@@ -26,6 +27,9 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
         <div className="detail-badges">
           <span className="badge">{categoryLabel(pin.category)}</span>
         </div>
+        {pin.sensitive && (
+          <p className="sensitive-note">⚠️ Sensitive access — please keep it low-key.</p>
+        )}
         {pin.notes && <p className="detail-desc">{pin.notes}</p>}
         <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
           🧭 Directions
@@ -82,6 +86,14 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
           onChange={(e) => setNotes(e.target.value)}
         />
       </div>
+
+      <label className="opt-in-row">
+        <input type="checkbox" checked={sensitive} onChange={(e) => setSensitive(e.target.checked)} />
+        <span>
+          Sensitive access — keep it low-key. Mark this if broadcasting the parking or
+          approach could threaten access to the crag.
+        </span>
+      </label>
 
       {!isNew && (
         <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
