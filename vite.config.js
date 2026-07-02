@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/climbing-app/',
+  base: '/', // custom domain cragward.com (was the /climbing-app/ GitHub Pages subpath)
   plugins: [
     react(),
     VitePWA({
@@ -39,15 +39,15 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'Western Slope Climbing',
-        short_name: 'Climbing',
-        description: 'Rock climbing routes for Colorado\'s Western Slope',
+        name: 'Cragward',
+        short_name: 'Cragward',
+        description: 'Find the wall and climb offline — parking, approach trails, and local beta for the crags you climb.',
         theme_color: '#3a4a5a',
         background_color: '#1c2530',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/climbing-app/',
-        start_url: '/climbing-app/',
+        scope: '/',
+        start_url: '/',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },

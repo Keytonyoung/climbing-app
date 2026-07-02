@@ -905,7 +905,7 @@ export default function App() {
     <div id="app">
       {offline && <div className="offline-bar">Offline — showing saved data; changes sync later</div>}
       <header id="top-bar">
-        <h1>Western Slope Climbing</h1>
+        <h1>Cragward</h1>
         <button
           className="account-btn"
           onClick={() => setShowSearch(true)}
