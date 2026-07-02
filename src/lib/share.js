@@ -1,6 +1,8 @@
 // Build and share deep links that open the app to a specific wall (and route).
 // Powers the "I did this yesterday, go check it out" flow.
 
+import { track, EVENTS } from './analytics'
+
 export function shareUrl({ wallId, routeId } = {}) {
   const base = `${location.origin}${import.meta.env.BASE_URL}`
   const p = new URLSearchParams()
@@ -16,6 +18,7 @@ export async function shareOrCopy(url, title) {
   if (navigator.share) {
     try {
       await navigator.share({ title, url })
+      track(EVENTS.SHARE, { method: 'native' })
       return 'shared'
     } catch {
       /* user cancelled or share failed — fall through to copy */
@@ -23,6 +26,7 @@ export async function shareOrCopy(url, title) {
   }
   try {
     await navigator.clipboard.writeText(url)
+    track(EVENTS.SHARE, { method: 'copy' })
     return 'copied'
   } catch {
     return 'failed'

@@ -36,6 +36,9 @@ import { displayName } from './data/auth'
 import { initSync } from './data/sync'
 import { getOverrides, setOverride, resetOverride } from './data/overrides'
 import { prefetchBeta } from './data/notes'
+import { canDownloadArea } from './data/entitlements'
+import { ensurePersistentStorage } from './lib/storage'
+import { track, EVENTS } from './lib/analytics'
 import { downloadArea } from './lib/tiles'
 import { useSheetDismiss } from './lib/useSheetDismiss'
 import AuthSheet from './components/AuthSheet'
@@ -793,8 +796,12 @@ export default function App() {
 
   async function downloadThisArea() {
     if (!map.current || dl?.running) return
+    if (!canDownloadArea(user)) return // free for everyone today; seam for later
     setDl({ running: true, phase: 'tiles', done: 0, total: 0 })
     try {
+      // Ask for durable storage before we fill it — this is the moment offline
+      // data matters most, and it's when a grant is most likely to stick.
+      const persisted = await ensurePersistentStorage()
       // 1. Map tiles for the viewport.
       await downloadArea(map.current, {
         onProgress: (done, total) => setDl({ running: true, phase: 'tiles', done, total }),
@@ -810,8 +817,14 @@ export default function App() {
         north: b.getNorth(),
       })
       await prefetchBeta(wallIds, routeIds)
+      track(EVENTS.AREA_DOWNLOADED)
       setDl({ running: false, finished: true })
       setTimeout(() => setDl(null), 3000)
+      // If the browser won't guarantee durable storage (common on iOS Safari
+      // in a browser tab), tell the truth: installing the app protects it.
+      if (!persisted) {
+        showToast('Saved. Tip: install the app (Share → Add to Home Screen) so your offline areas aren’t cleared.')
+      }
     } catch (e) {
       setDl(null)
       showToast(`Couldn't save this area: ${e.message || e}`)
