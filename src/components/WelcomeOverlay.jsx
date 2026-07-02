@@ -27,25 +27,26 @@ export default function WelcomeOverlay({ onDismiss }) {
   return (
     <div className="welcome-overlay">
       <div className="welcome-card">
-        <h1 className="welcome-title">Western Slope Climbing</h1>
-        <p className="welcome-tagline">Made by climbers, for climbers.</p>
+        <h1 className="welcome-title">Cragward</h1>
+        <p className="welcome-tagline">Find the wall, climb offline.</p>
 
         <div className="welcome-mission">
-          We're building the best climbing database out there — and you're part of it.
-          Log your climbs, fix wall locations, and drop beta (parking, approach trails,
-          notes, photos). Every contribution makes it better for the next climber.
+          Cragward gets you <em>to</em> the wall — parking, the approach trail, and local
+          beta — and keeps working when your signal doesn't. We're building it together,
+          crag by crag: your pins, trails, notes, and photos make it better for the next
+          climber.
         </div>
 
         <ul className="welcome-tips">
-          <li><strong>Tap a wall</strong> to see its routes, notes, and photos.</li>
-          <li><strong>Sign in</strong> to contribute — it all syncs to everyone.</li>
-          <li><strong>📍 Fix location</strong> if a wall's pin is off — help clean up the map.</li>
-          <li><strong>Save area offline</strong> before you lose signal at the crag.</li>
+          <li><strong>Tap a wall</strong> for its routes, approach, notes, and photos.</li>
+          <li><strong>Save area offline</strong> → the whole crag works in airplane mode.</li>
+          <li><strong>Sign in to add beta</strong> — parking, trails, notes, photos; it syncs to everyone.</li>
+          <li><strong>📍 Fix a location</strong> if a wall's pin is off — help clean up the map.</li>
         </ul>
 
         {showInstall && (
           <div className="welcome-install">
-            <strong>📲 Install it for the full experience</strong>
+            <strong>📲 Install Cragward — so your offline areas stay put</strong>
             {ios ? (
               <p>
                 In <strong>Safari</strong>, tap the Share button (the box with an ↑) at the
