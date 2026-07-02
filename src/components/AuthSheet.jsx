@@ -12,6 +12,7 @@ import {
   setMarketingOptIn,
 } from '../data/auth'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
+import { track, EVENTS } from '../lib/analytics'
 
 export default function AuthSheet({ onClose, onShowHelp }) {
   const { user } = useAuth()
@@ -70,6 +71,9 @@ export default function AuthSheet({ onClose, onShowHelp }) {
     setError(null)
     try {
       await sendMagicLink(email.trim())
+      // Top-of-funnel acquisition signal (a sign-in link was requested). Umami's
+      // unique-visitor count separates genuinely new users.
+      track(EVENTS.SIGN_UP)
       setStep('sent')
     } catch (e) {
       setError(e.message || String(e))
