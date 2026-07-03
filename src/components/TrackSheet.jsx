@@ -35,7 +35,7 @@ export default function TrackSheet({ track, pins, mine, onAnchorTap, onDelete, o
             className="anchor-link"
             onClick={() => onAnchorTap(track.end, coords[coords.length - 1])}
           >
-            🧗 {end.label}
+            <Icon name="mountain" size={13} /> {end.label}
           </button>
         </div>
       </div>

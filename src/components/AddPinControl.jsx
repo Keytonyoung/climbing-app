@@ -54,7 +54,7 @@ export default function AddPinControl({
             <Icon name="locate" size={15} /> Use my location
           </button>
           <button className="place-btn" onClick={onTapMode}>
-            👆 Tap the map
+            <Icon name="pin" size={15} /> Tap the map
           </button>
         </div>
       )}

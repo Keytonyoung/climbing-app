@@ -29,7 +29,7 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
           <span className="badge">{categoryLabel(pin.category)}</span>
         </div>
         {pin.sensitive && (
-          <p className="sensitive-note">⚠️ Sensitive access — please keep it low-key.</p>
+          <p className="sensitive-note">Sensitive access — please keep it low-key.</p>
         )}
         {pin.notes && <p className="detail-desc">{pin.notes}</p>}
         <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
