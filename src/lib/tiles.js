@@ -13,15 +13,20 @@ function lngLatToTile(lng, lat, z) {
 }
 
 /**
- * Download tiles covering the current viewport from the current zoom up to
- * `extraZoom` levels deeper (capped). Calls onProgress(done, total).
- * Returns the number of tiles fetched.
+ * Download tiles covering the current viewport (or an explicit saved `bounds`
+ * + `zoom`, for one-tap re-downloads) from that zoom up to `extraZoom` levels
+ * deeper (capped). Calls onProgress(done, total). Returns tiles fetched.
  */
-export async function downloadArea(map, { extraZoom = 2, maxTiles = 1500, onProgress } = {}) {
-  const bounds = map.getBounds()
-  const sw = bounds.getSouthWest()
-  const ne = bounds.getNorthEast()
-  const z0 = Math.floor(map.getZoom())
+export async function downloadArea(map, { bounds, zoom, extraZoom = 2, maxTiles = 1500, onProgress } = {}) {
+  const b = bounds
+    ? { west: bounds.west, south: bounds.south, east: bounds.east, north: bounds.north }
+    : (() => {
+        const mb = map.getBounds()
+        return { west: mb.getWest(), south: mb.getSouth(), east: mb.getEast(), north: mb.getNorth() }
+      })()
+  const sw = { lng: b.west, lat: b.south }
+  const ne = { lng: b.east, lat: b.north }
+  const z0 = Math.floor(zoom ?? map.getZoom())
   const maxZ = Math.min(z0 + extraZoom, 16)
 
   // Collect resolved {z}/{x}/{y} templates from the style's vector/raster sources.

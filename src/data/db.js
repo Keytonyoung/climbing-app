@@ -6,7 +6,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'climbing-app'
-const DB_VERSION = 8
+const DB_VERSION = 9
 
 let dbPromise = null
 
@@ -54,6 +54,12 @@ export function getDB() {
         // offline; the image bytes are cached by the service worker.
         if (oldVersion < 8 && !db.objectStoreNames.contains('photos')) {
           db.createObjectStore('photos', { keyPath: 'id' })
+        }
+        // v9: registry of saved offline areas (name/bounds/date/counts) so the
+        // user can SEE what's downloaded, re-download it, and we can detect
+        // when the browser evicted the offline caches. See data/areas.js.
+        if (oldVersion < 9) {
+          db.createObjectStore('areas', { keyPath: 'id' })
         }
       },
     })

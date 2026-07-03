@@ -37,6 +37,13 @@ import { initSync } from './data/sync'
 import { getOverrides, setOverride, resetOverride } from './data/overrides'
 import { prefetchBeta } from './data/notes'
 import { canDownloadArea } from './data/entitlements'
+import {
+  recordSavedArea,
+  getSavedAreas,
+  deleteSavedArea,
+  deriveAreaName,
+  checkOfflineHealth,
+} from './data/areas'
 import { ensurePersistentStorage } from './lib/storage'
 import { track, EVENTS } from './lib/analytics'
 import { downloadArea } from './lib/tiles'
@@ -54,6 +61,7 @@ import PinEditSheet from './components/PinEditSheet'
 import TrackRecordPanel from './components/TrackRecordPanel'
 import TrackSaveSheet from './components/TrackSaveSheet'
 import TrackSheet from './components/TrackSheet'
+import OfflineAreasSheet from './components/OfflineAreasSheet'
 import Icon from './components/Icon'
 import './App.css'
 
@@ -128,6 +136,9 @@ export default function App() {
   const isAdmin = !!user && user.id === import.meta.env.VITE_ADMIN_USER_ID
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
   const [dl, setDl] = useState(null) // offline-download state
+  const [showOffline, setShowOffline] = useState(false) // saved-areas sheet
+  const [savedAreas, setSavedAreas] = useState([])
+  const [offlineHealth, setOfflineHealth] = useState({ evicted: false })
   const [satellite, setSatellite] = useState(false)
   const [overrides, setOverrides] = useState({}) // wallId -> corrected coords
   const [locating, setLocating] = useState(null) // { wallId, name, lng, lat } while fixing a wall
@@ -424,6 +435,44 @@ export default function App() {
       setTracks(await getTracks())
       setOverrides(await getOverrides())
     })
+  }, [])
+
+  // Load the saved-areas registry and check offline health once at startup: if
+  // areas were saved but the tile cache is empty, the browser EVICTED offline
+  // storage (classic iOS) — warn now, not at a signal-less trailhead.
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      const areas = await getSavedAreas()
+      const health = await checkOfflineHealth()
+      if (!alive) return
+      setSavedAreas(areas)
+      setOfflineHealth(health)
+      if (health.evicted) {
+        showToast('⚠ Your phone cleared the saved offline maps — re-download your areas before the next trip.')
+      }
+    })()
+    return () => {
+      alive = false
+    }
+     
+  }, [])
+
+  // When a NEW build's service worker takes control mid-session, reload once so
+  // the user is on the latest version immediately — instead of one launch
+  // behind (the "close and reopen twice" PWA dance). Never during a trail
+  // recording (a reload would lose it); the session flag prevents reload loops.
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    const onControllerChange = () => {
+      if (modeRef.current.recording) return // applies on next launch instead
+      if (sessionStorage.getItem('sw-reloaded')) return
+      sessionStorage.setItem('sw-reloaded', '1')
+      window.location.reload()
+    }
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+    return () => navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+     
   }, [])
 
   // Track connectivity for the offline indicator.
@@ -829,7 +878,9 @@ export default function App() {
     map.current?.setLayoutProperty('satellite', 'visibility', next ? 'visible' : 'none')
   }
 
-  async function downloadThisArea() {
+  // Core download used both for "save current view" and one-tap re-downloads of
+  // a previously saved area. Records/refreshes the saved-areas registry.
+  async function runAreaDownload({ id, name, bounds, zoom }) {
     if (!map.current || dl?.running) return
     if (!canDownloadArea(user)) return // free for everyone today; seam for later
     setDl({ running: true, phase: 'tiles', done: 0, total: 0 })
@@ -837,21 +888,31 @@ export default function App() {
       // Ask for durable storage before we fill it — this is the moment offline
       // data matters most, and it's when a grant is most likely to stick.
       const persisted = await ensurePersistentStorage()
-      // 1. Map tiles for the viewport.
-      await downloadArea(map.current, {
+      // 1. Map tiles.
+      const tiles = await downloadArea(map.current, {
+        bounds,
+        zoom,
         onProgress: (done, total) => setDl({ running: true, phase: 'tiles', done, total }),
       })
-      // 2. All beta (notes + photos) for the walls in view, so the area is
+      // 2. All beta (notes + photos) for the walls in the box, so the area is
       //    fully usable offline without opening each route first.
       setDl({ running: true, phase: 'beta' })
-      const b = map.current.getBounds()
-      const { wallIds, routeIds } = getAreaTargets({
-        west: b.getWest(),
-        south: b.getSouth(),
-        east: b.getEast(),
-        north: b.getNorth(),
+      const { wallIds, routeIds } = getAreaTargets(bounds)
+      const beta = await prefetchBeta(wallIds, routeIds)
+      // 3. Remember what we saved, so it's visible / re-downloadable / and we
+      //    can detect eviction later.
+      await recordSavedArea({
+        id,
+        name,
+        bounds,
+        zoom,
+        tiles,
+        notes: beta.notes,
+        photos: beta.photos,
+        walls: wallIds.size,
       })
-      await prefetchBeta(wallIds, routeIds)
+      setSavedAreas(await getSavedAreas())
+      setOfflineHealth({ evicted: false })
       track(EVENTS.AREA_DOWNLOADED)
       setDl({ running: false, finished: true })
       setTimeout(() => setDl(null), 3000)
@@ -866,8 +927,22 @@ export default function App() {
     }
   }
 
+  function downloadThisArea() {
+    if (!map.current) return
+    const mb = map.current.getBounds()
+    const bounds = { west: mb.getWest(), south: mb.getSouth(), east: mb.getEast(), north: mb.getNorth() }
+    runAreaDownload({ name: deriveAreaName(bounds), bounds, zoom: map.current.getZoom() })
+  }
+
+  async function removeSavedArea(id) {
+    await deleteSavedArea(id)
+    setSavedAreas(await getSavedAreas())
+  }
+
   const dlLabel = !dl
-    ? 'Save area offline'
+    ? savedAreas.length > 0
+      ? `Offline areas (${savedAreas.length})`
+      : 'Save area offline'
     : dl.finished
       ? 'Saved offline ✓'
       : dl.phase === 'beta'
@@ -1027,10 +1102,11 @@ export default function App() {
 
       <button
         className="offline-btn"
-        onClick={downloadThisArea}
+        onClick={() => (savedAreas.length > 0 ? setShowOffline(true) : downloadThisArea())}
         disabled={dl?.running}
       >
-        {dlLabel}
+        <Icon name="download" size={15} /> {dlLabel}
+        {offlineHealth.evicted && <span className="offline-warn-dot" />}
       </button>
 
       <button
@@ -1113,6 +1189,19 @@ export default function App() {
           onFixLocation={startFixLocation}
           onResetLocation={resetWallLocation}
           onClose={closeSheets}
+        />
+      )}
+
+      {showOffline && (
+        <OfflineAreasSheet
+          areas={savedAreas}
+          dl={dl}
+          dlLabel={dlLabel}
+          health={offlineHealth}
+          onSaveCurrent={downloadThisArea}
+          onRedownload={(a) => runAreaDownload({ id: a.id, name: a.name, bounds: a.bounds, zoom: a.zoom })}
+          onDelete={removeSavedArea}
+          onClose={() => setShowOffline(false)}
         />
       )}
 
