@@ -1,26 +1,34 @@
-/* Design tokens — "Alpine Slate" (cool, clean, modern-outdoors palette).
-   All app chrome pulls from these so the whole UI moves together. */
+/* Design tokens — "High Desert" (warm canyon palette: basalt chrome, canyon-
+   light canvas, terracotta reserved for the actions and the rock itself).
+   Discipline is the design: neutrals do 90% of the work; terracotta only where
+   it MEANS something. All app chrome pulls from these tokens.
+   Map-layer + pin-icon colors live in JS (App.jsx, pins.js) — keep in sync. */
 :root {
   /* palette */
-  --slate: #3a4a5a; /* header / dark surfaces */
-  --slate-deep: #1c2530; /* primary text */
-  --pine: #2e7d5b; /* primary accent */
-  --pine-dark: #246349;
-  --off-white: #f5f7f8; /* app background */
-  --line: #e2e7ea; /* hairline borders */
+  --basalt: #26201b; /* header / dark surfaces — warm near-black */
+  --ink: #2b241d; /* primary text — warm espresso charcoal */
+  --terracotta: #b6532f; /* primary accent — canyon sandstone */
+  --terracotta-deep: #97401f; /* hover / pressed */
+  --terracotta-tint: #f7e9e1; /* subtle warm fill */
+  --canyon-light: #faf6f0; /* app background — desert morning light */
+  --line: #eae1d6; /* hairline borders, warm */
   --surface: #ffffff; /* cards / sheets */
+  --sky-teal: #1f7d74; /* trails / the counterweight accent */
 
   /* semantic */
-  --color-bg: var(--off-white);
+  --color-bg: var(--canyon-light);
   --color-surface: var(--surface);
-  --color-text: var(--slate-deep);
-  --color-text-muted: #5d6b78;
+  --color-text: var(--ink);
+  --color-text-muted: #857a6d;
   --color-line: var(--line);
-  --color-primary: var(--pine);
+  --color-primary: var(--terracotta);
+  --color-primary-deep: var(--terracotta-deep);
+  --color-primary-tint: var(--terracotta-tint);
   --color-primary-contrast: #fff;
-  --color-header: var(--slate);
-  --color-danger: #c0392b;
-  --color-chip: #eef1f4; /* subtle slate-tint fill for badges/chips */
+  --color-header: var(--basalt);
+  --color-accent: var(--sky-teal);
+  --color-danger: #a52a2a;
+  --color-chip: #f3ece3; /* subtle sand-tint fill for badges/chips */
 
   /* shape */
   --radius: 10px;

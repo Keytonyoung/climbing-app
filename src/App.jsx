@@ -221,7 +221,7 @@ export default function App() {
         type: 'line',
         source: 'tracks',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#0d9488', 'line-width': 4 },
+        paint: { 'line-color': '#1f7d74', 'line-width': 4 },
       })
       m.addSource('track-recording', { type: 'geojson', data: EMPTY_FC })
       m.addLayer({
@@ -238,7 +238,7 @@ export default function App() {
         source: 'walls',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': '#2e7d5b',
+          'circle-color': '#b6532f',
           'circle-opacity': 0.85,
           'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30],
         },
@@ -261,7 +261,7 @@ export default function App() {
         source: 'walls',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-color': '#2e7d5b',
+          'circle-color': '#b6532f',
           'circle-radius': 7,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
@@ -285,7 +285,7 @@ export default function App() {
           'text-optional': true,
         },
         paint: {
-          'text-color': '#1c2530',
+          'text-color': '#2b241d',
           'text-halo-color': '#ffffff',
           'text-halo-width': 1.2,
         },
@@ -529,7 +529,7 @@ export default function App() {
 
   function showFixMarker(lng, lat) {
     if (markerRef.current) markerRef.current.remove()
-    const mk = new maplibregl.Marker({ draggable: true, color: '#2e7d5b' })
+    const mk = new maplibregl.Marker({ draggable: true, color: '#b6532f' })
       .setLngLat([lng, lat])
       .addTo(map.current)
     mk.on('dragend', () => {
@@ -941,12 +941,15 @@ export default function App() {
       <header id="top-bar">
         <h1>Cragward</h1>
         <button
-          className="account-btn"
+          className="search-pill"
           onClick={() => setShowSearch(true)}
-          title="Search"
-          aria-label="Search"
+          aria-label="Search crags and routes"
         >
-          🔍
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.5" y2="16.5" />
+          </svg>
+          <span>Search crags &amp; routes</span>
         </button>
         {isAdmin && (
           <button

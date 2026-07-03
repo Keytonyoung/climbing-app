@@ -11,13 +11,14 @@ import { getCurrentUser, getDisplayNames, displayName } from './auth'
 import { isOnline, cachePutAll, cacheGetAll, cachePut, cacheDelete, enqueue } from './sync'
 
 // Pin categories: the single source of truth for labels and map colors.
-// Colors are chosen to read as distinct from the red (#e94560) climbing walls.
+// Palette: "High Desert" (see src/index.css) — each reads distinct from the
+// terracotta (#b6532f) climbing walls while staying warm/harmonized.
 export const CATEGORIES = [
-  { key: 'parking', label: 'Parking', color: '#2d6cdf' },
-  { key: 'trailhead', label: 'Trailhead', color: '#16a34a' },
-  { key: 'water', label: 'Water', color: '#0891b2' },
-  { key: 'camp', label: 'Camp', color: '#d97706' },
-  { key: 'other', label: 'Other', color: '#7c3aed' },
+  { key: 'parking', label: 'Parking', color: '#3a6ea5' }, // denim sky
+  { key: 'trailhead', label: 'Trailhead', color: '#4a7c4e' }, // sage
+  { key: 'water', label: 'Water', color: '#2687a0' }, // river teal
+  { key: 'camp', label: 'Camp', color: '#c98a2d' }, // ochre
+  { key: 'other', label: 'Other', color: '#7d5ba6' }, // dusk violet
 ]
 
 export const DEFAULT_CATEGORY = 'parking'

@@ -33,11 +33,43 @@ html, body, #root {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: #eef2f5;
+  color: #f6f0e9;
   white-space: nowrap;
+  flex: none; /* the search pill takes the remaining row */
+  margin-right: 4px;
+}
+
+/* Header search — styled as a real search field so it reads as "type here to
+   find a crag/route" instead of a mystery icon. Tapping opens the search sheet. */
+.search-pill {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(246, 240, 233, 0.78);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.search-pill:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.search-pill svg {
+  flex: none;
+  opacity: 0.85;
+}
+.search-pill span {
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1; /* take the row; account button sits at the far right */
+  white-space: nowrap;
 }
 
 /* Account / sign-in button (only button left in the header). */
@@ -45,7 +77,7 @@ html, body, #root {
   flex-shrink: 0;
   font-size: 12px;
   font-weight: 600;
-  color: #eef2f5;
+  color: #f6f0e9;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
@@ -147,10 +179,10 @@ html, body, #root {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  border: 1px solid #0d9488;
+  border: 1px solid var(--color-accent);
   border-radius: 8px;
-  background: #f0fdfa;
-  color: #0d9488;
+  background: #eaf4f2;
+  color: var(--color-accent);
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -217,7 +249,7 @@ html, body, #root {
   padding: 8px 10px;
   border: 1px solid var(--color-line);
   border-radius: 8px;
-  background: #fafafa;
+  background: #faf7f3;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -415,7 +447,7 @@ html, body, #root {
 }
 .notes-saved {
   font-size: 12px;
-  color: #16a34a;
+  color: #4a7c4e;
   font-weight: 600;
 }
 .photo-grid {
@@ -443,9 +475,9 @@ html, body, #root {
 .photo-add {
   width: 72px;
   height: 72px;
-  border: 1px dashed #bbb;
+  border: 1px dashed #cfc4b6;
   border-radius: 8px;
-  background: #fafafa;
+  background: #faf7f3;
   color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 600;
@@ -772,7 +804,7 @@ html, body, #root {
   font-size: 12px;
   font-weight: 600;
   color: #fff;
-  background: #5d6b78;
+  background: #6d6257;
   padding: 4px 8px;
 }
 
@@ -1188,7 +1220,7 @@ html, body, #root {
   white-space: nowrap;
 }
 .route-chevron {
-  color: #aebac4;
+  color: #c2b6a8;
   font-size: 18px;
 }
 
