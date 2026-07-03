@@ -41,12 +41,12 @@ export default function WelcomeOverlay({ onDismiss }) {
           <li><strong>Tap a wall</strong> for its routes, approach, notes, and photos.</li>
           <li><strong>Save area offline</strong> → the whole crag works in airplane mode.</li>
           <li><strong>Sign in to add beta</strong> — parking, trails, notes, photos; it syncs to everyone.</li>
-          <li><strong>📍 Fix a location</strong> if a wall's pin is off — help clean up the map.</li>
+          <li><strong>Fix a location</strong> if a wall's pin is off — help clean up the map.</li>
         </ul>
 
         {showInstall && (
           <div className="welcome-install">
-            <strong>📲 Install Cragward — so your offline areas stay put</strong>
+            <strong>Install Cragward — so your offline areas stay put</strong>
             {ios ? (
               <p>
                 In <strong>Safari</strong>, tap the Share button (the box with an ↑) at the

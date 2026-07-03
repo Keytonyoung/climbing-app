@@ -2,6 +2,7 @@
 // category and choose how to place the pin: at his GPS location, or by tapping
 // the map. App owns the actual marker/placement; this is the chooser UI.
 
+import Icon from './Icon'
 import { CATEGORIES } from '../data/pins'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
 
@@ -50,7 +51,7 @@ export default function AddPinControl({
       ) : (
         <div className="place-actions">
           <button className="place-btn primary" onClick={onUseLocation}>
-            📍 Use my location
+            <Icon name="locate" size={15} /> Use my location
           </button>
           <button className="place-btn" onClick={onTapMode}>
             👆 Tap the map

@@ -216,9 +216,15 @@ html, body, #root {
   cursor: pointer;
   text-align: left;
 }
-.wall-access-row .access-icon {
-  font-size: 18px;
+.wall-access-row .access-badge {
   flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
 }
 .wall-access-row .access-text {
   display: flex;
@@ -1320,4 +1326,67 @@ html, body, #root {
 }
 .sheet-close:hover {
   color: var(--color-text);
+}
+
+/* --- Sharpening pass: icon alignment, touch feedback, type rhythm --------- */
+
+/* Any icon inside a labeled control sits on the text's optical center. */
+button svg,
+label svg,
+.wall-moved svg,
+.anchor-link svg {
+  vertical-align: -3px;
+}
+.directions-btn,
+.place-btn,
+.basemap-btn,
+.offline-btn,
+.photo-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.action-btn .action-icon {
+  vertical-align: 0;
+}
+
+/* Touch feedback — controls respond to the finger. Cheap-feeling UIs don't. */
+button {
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.06s ease;
+}
+.pin-save:active,
+.directions-btn:active,
+.action-btn:active,
+.search-pill:active,
+.account-btn:active,
+.offline-btn:active,
+.basemap-btn:active,
+.welcome-btn:active,
+.chip:active,
+.place-btn:active {
+  transform: scale(0.97);
+}
+.pin-save:hover:not(:disabled) {
+  background: var(--color-primary-deep);
+}
+
+/* Keyboard/a11y focus without a fuzzy default ring */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Type rhythm: sheet titles get real display weight; labels stay quiet. */
+.sheet-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.welcome-title {
+  letter-spacing: -0.02em;
 }

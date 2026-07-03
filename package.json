@@ -14,6 +14,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
     "@supabase/supabase-js": "^2.108.1",
     "idb": "^8.0.3",
     "maplibre-gl": "^5.24.0",

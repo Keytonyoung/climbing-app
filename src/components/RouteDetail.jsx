@@ -1,6 +1,7 @@
 // Full detail view for a single route. Shown as a bottom sheet over the map.
 // Only displays sourced data — never auto-generated safety info (CLAUDE.md §8).
 
+import Icon from './Icon'
 import { useState } from 'react'
 import NotesPhotos from './NotesPhotos'
 import RouteLog from './RouteLog'
@@ -53,7 +54,7 @@ export default function RouteDetail({ route, wall, onBack, onClose }) {
       </div>
 
       <button className="directions-btn" onClick={share}>
-        {copied ? '✓ Link copied' : '🔗 Share route'}
+        <Icon name="share" size={15} /> {copied ? 'Link copied ✓' : 'Share route'}
       </button>
 
       <RouteLog route={route} wallId={wall.id} />

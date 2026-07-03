@@ -1,12 +1,13 @@
 // Bottom sheet listing the routes on a tapped wall. Tap a route to open its
 // detail view.
 
+import Icon from './Icon'
 import { useState } from 'react'
 import NotesPhotos from './NotesPhotos'
 import { openDirections } from '../lib/directions'
 import { shareUrl, shareOrCopy } from '../lib/share'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
-import { categoryLabel } from '../data/pins'
+import { categoryLabel, categoryColor } from '../data/pins'
 import { formatDistance } from '../data/tracks'
 
 const TYPE_LABELS = {
@@ -15,15 +16,6 @@ const TYPE_LABELS = {
   toprope: 'Top-rope',
   boulder: 'Boulder',
   aid: 'Aid',
-}
-
-// List icons for access pins (the map uses its own teardrop markers).
-const CATEGORY_ICON = {
-  parking: '🅿️',
-  trailhead: '🚩',
-  water: '💧',
-  camp: '⛺',
-  other: '📍',
 }
 
 export default function WallSheet({
@@ -63,18 +55,18 @@ export default function WallSheet({
 
       <div className="sheet-actions">
         <button className="directions-btn" onClick={() => openDirections(wall.lat, wall.lng)}>
-          🧭 Directions
+          <Icon name="directions" size={15} /> Directions
         </button>
         <button className="directions-btn" onClick={share}>
-          {copied ? '✓ Link copied' : '🔗 Share'}
+          <Icon name="share" size={15} /> {copied ? 'Link copied ✓' : 'Share'}
         </button>
       </div>
 
       <div className="wall-location">
         {wall.moved ? (
-          <span className="wall-moved">📍 Location corrected{wall.movedBy ? ` by ${wall.movedBy}` : ''}</span>
+          <span className="wall-moved"><Icon name="pin" size={13} /> Location corrected{wall.movedBy ? ` by ${wall.movedBy}` : ''}</span>
         ) : (
-          <span className="wall-moved muted">📍 OpenBeta location</span>
+          <span className="wall-moved muted"><Icon name="pin" size={13} /> OpenBeta location</span>
         )}
         {canEdit && (
           <span className="wall-location-actions">
@@ -91,7 +83,9 @@ export default function WallSheet({
           <h3 className="wall-access-title">Getting there</h3>
           {access.map(({ pin, distance, linked }) => (
             <button key={pin.id} className="wall-access-row" onClick={() => onOpenPin(pin)}>
-              <span className="access-icon">{CATEGORY_ICON[pin.category] || '📍'}</span>
+              <span className="access-badge" style={{ background: categoryColor(pin.category) }}>
+                <Icon name="pin" size={13} strokeWidth={2.4} />
+              </span>
               <span className="access-text">
                 <span className="access-label">{pin.label || categoryLabel(pin.category)}</span>
                 <span className="access-sub">
@@ -104,7 +98,9 @@ export default function WallSheet({
           ))}
           {tracks.map((t) => (
             <button key={t.id} className="wall-access-row" onClick={() => onOpenTrack(t)}>
-              <span className="access-icon">🥾</span>
+              <span className="access-badge" style={{ background: 'var(--sky-teal)' }}>
+                <Icon name="trail" size={13} strokeWidth={2.4} />
+              </span>
               <span className="access-text">
                 <span className="access-label">{t.name || 'Approach trail'}</span>
                 <span className="access-sub">Recorded approach trail</span>

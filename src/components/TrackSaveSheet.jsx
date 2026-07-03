@@ -3,6 +3,7 @@
 // candidate; if nothing is close, it defaults to creating a parking pin at that
 // endpoint so the trail is always anchored and the recording is never lost.
 
+import Icon from './Icon'
 import { useState } from 'react'
 import { formatDistance } from '../data/tracks'
 
@@ -34,7 +35,7 @@ function AnchorPicker({ title, candidates, value, onChange }) {
             >
               {c.label}
               <span className="chip-dist">
-                {c.kind === 'wall' ? '🧗 ' : '📍 '}
+                {c.kind === 'wall' ? <Icon name="mountain" size={13} /> : <Icon name="pin" size={13} />}{' '}
                 {formatDistance(c.distance)}
               </span>
             </button>
@@ -44,7 +45,7 @@ function AnchorPicker({ title, candidates, value, onChange }) {
           className={`chip ${isCreate ? 'on' : ''}`}
           onClick={() => onChange({ create: true })}
         >
-          ＋ Parking pin here
+          + Parking pin here
         </button>
       </div>
     </div>

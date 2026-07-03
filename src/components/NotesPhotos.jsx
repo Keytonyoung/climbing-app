@@ -3,6 +3,7 @@
 // Both notes and photos live in Supabase now (everyone reads; signed-in users
 // contribute; you can delete your own).
 
+import Icon from './Icon'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -194,7 +195,7 @@ export default function NotesPhotos({ kind, id }) {
         ))}
         {user && (
           <label className={`photo-add ${busy ? 'is-busy' : ''}`}>
-            {busy ? '…' : '＋ Photo'}
+            {busy ? '…' : <><Icon name="camera" size={16} /> Photo</>}
             <input
               type="file"
               accept="image/*"

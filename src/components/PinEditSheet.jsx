@@ -1,6 +1,7 @@
 // Bottom sheet for a personal pin. Editable when it's yours (or new); read-only
 // with attribution when it's a buddy's (RLS only lets you edit your own).
 
+import Icon from './Icon'
 import { useState } from 'react'
 import { CATEGORIES, categoryLabel } from '../data/pins'
 import { openDirections } from '../lib/directions'
@@ -32,7 +33,7 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
         )}
         {pin.notes && <p className="detail-desc">{pin.notes}</p>}
         <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
-          🧭 Directions
+          <Icon name="directions" size={15} /> Directions
         </button>
         <footer className="detail-footer">Added by {pin.authorName || 'a climber'}</footer>
       </div>
@@ -97,7 +98,7 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
 
       {!isNew && (
         <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
-          🧭 Directions
+          <Icon name="directions" size={15} /> Directions
         </button>
       )}
 

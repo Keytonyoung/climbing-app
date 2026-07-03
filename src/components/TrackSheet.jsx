@@ -1,6 +1,7 @@
 // Bottom sheet for viewing a saved trail: name, length, both anchors (tap to
 // zoom/open), notes, and Delete.
 
+import Icon from './Icon'
 import { resolveAnchor, formatDistance } from '../data/tracks'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
 
@@ -27,7 +28,7 @@ export default function TrackSheet({ track, pins, mine, onAnchorTap, onDelete, o
         <span className="filter-label">Route</span>
         <div className="anchor-row">
           <button className="anchor-link" onClick={() => onAnchorTap(track.start, coords[0])}>
-            📍 {start.label}
+            <Icon name="pin" size={13} /> {start.label}
           </button>
           <span className="anchor-arrow">→</span>
           <button

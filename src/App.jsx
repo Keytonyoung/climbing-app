@@ -54,6 +54,7 @@ import PinEditSheet from './components/PinEditSheet'
 import TrackRecordPanel from './components/TrackRecordPanel'
 import TrackSaveSheet from './components/TrackSaveSheet'
 import TrackSheet from './components/TrackSheet'
+import Icon from './components/Icon'
 import './App.css'
 
 // Grand Junction, CO
@@ -866,7 +867,7 @@ export default function App() {
   }
 
   const dlLabel = !dl
-    ? '⬇ Save area offline'
+    ? 'Save area offline'
     : dl.finished
       ? 'Saved offline ✓'
       : dl.phase === 'beta'
@@ -958,7 +959,7 @@ export default function App() {
             title="Recent contributions"
             aria-label="Recent contributions"
           >
-            🛡️
+            <Icon name="shield" size={16} />
           </button>
         )}
         <button
@@ -1000,7 +1001,7 @@ export default function App() {
           <div className="filter-panel">
             <p className="record-hint">Drag the green pin onto the wall, or use your location if you're there.</p>
             <div className="place-actions">
-              <button className="place-btn primary" onClick={fixUseMyLocation}>📍 Use my location</button>
+              <button className="place-btn primary" onClick={fixUseMyLocation}><Icon name="locate" size={15} /> Use my location</button>
               <button className="place-btn" onClick={saveFixLocation}>Save location</button>
             </div>
             {geoError && <p className="place-error">{geoError}</p>}
@@ -1036,7 +1037,7 @@ export default function App() {
         className={`basemap-btn ${satellite ? 'active' : ''}`}
         onClick={toggleSatellite}
       >
-        {satellite ? '🗺 Street' : '🛰 Satellite'}
+        <Icon name="layers" size={15} /> {satellite ? 'Street' : 'Satellite'}
       </button>
 
       <nav id="action-bar">
@@ -1044,22 +1045,22 @@ export default function App() {
           className={`action-btn ${showFeed ? 'active' : ''}`}
           onClick={() => { closeSheets(); setShowFilter(false); setAdding(false); armTap(false); setShowFeed(true) }}
         >
-          <span className="action-icon">📣</span>
+          <Icon name="feed" className="action-icon" size={20} />
           Feed
         </button>
         <button className={`action-btn ${filtered ? 'active' : ''}`} onClick={toggleFilter}>
-          <span className="action-icon">⛃</span>
+          <Icon name="filter" className="action-icon" size={20} />
           Filter{filtered ? ' •' : ''}
         </button>
         <button className={`action-btn ${adding ? 'active' : ''}`} onClick={toggleAdd}>
-          <span className="action-icon">＋</span>
+          <Icon name="plus" className="action-icon" size={20} />
           Pin
         </button>
         <button
           className={`action-btn ${showTrack || recording ? 'active' : ''}`}
           onClick={toggleTrack}
         >
-          <span className="action-icon">🥾</span>
+          <Icon name="trail" className="action-icon" size={20} />
           Trail
         </button>
       </nav>
