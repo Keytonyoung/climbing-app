@@ -5,6 +5,7 @@ import {
   isDefaultFilter,
   getFilteredWalls,
   getAreaTargets,
+  searchWallsAndRoutes,
   initSeed,
   getWalls,
   DEFAULT_FILTER,
@@ -63,6 +64,25 @@ describe('seed-backed functions', () => {
     for (const w of walls) {
       expect(w.routes.every((r) => r.type === 'sport')).toBe(true)
     }
+  })
+
+  it('search ranks word-start matches above mid-word substrings', () => {
+    const hits = searchWallsAndRoutes('otto', 25)
+    expect(hits.length).toBeGreaterThan(0)
+    // Every leading result whose name contains "otto" mid-word (Bottom, Grotto)
+    // must come AFTER all results where "otto" starts the name or a word.
+    const scores = hits.map((h) => {
+      const n = h.title.toLowerCase()
+      const i = n.indexOf('otto')
+      return i === 0 ? 0 : /[^a-z0-9]/.test(n[i - 1]) ? 1 : 2
+    })
+    expect([...scores].sort((a, b) => a - b)).toEqual(scores)
+    // And the top hit is a genuine word match, not "Big Bottom Lip".
+    expect(scores[0]).toBeLessThan(2)
+  })
+
+  it('search returns nothing for sub-2-char queries', () => {
+    expect(searchWallsAndRoutes('o')).toEqual([])
   })
 
   it('getAreaTargets includes a wall inside the box and excludes far ones', () => {

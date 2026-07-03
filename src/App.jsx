@@ -165,7 +165,17 @@ export default function App() {
       attributionControl: false, // re-added at top-right so the bottom bar can't cover it
     })
 
-    map.current.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right')
+    const attrib = new maplibregl.AttributionControl({ compact: true })
+    map.current.addControl(attrib, 'top-right')
+    // The compact control renders itself EXPANDED on load (a full-width bar on
+    // phones); collapse it — the (i) button still opens it for the credits.
+    setTimeout(() => {
+      const el = attrib._container
+      if (el) {
+        el.removeAttribute('open')
+        el.classList.remove('maplibregl-compact-show')
+      }
+    }, 0)
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right')
     map.current.addControl(
       new maplibregl.GeolocateControl({ trackUserLocation: true }),
@@ -254,6 +264,29 @@ export default function App() {
           'circle-radius': 7,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
+        },
+      })
+      // Wall names under the dots — without these the de-clustered map is a
+      // field of anonymous green dots. text-optional lets crowded labels drop
+      // out instead of hiding the dot.
+      m.addLayer({
+        id: 'wall-label',
+        type: 'symbol',
+        source: 'walls',
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Regular'], // served by OpenFreeMap (avoids 404 fallback)
+          'text-size': 11,
+          'text-anchor': 'top',
+          'text-offset': [0, 0.9],
+          'text-max-width': 9,
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': '#1c2530',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.2,
         },
       })
 

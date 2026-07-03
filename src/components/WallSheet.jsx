@@ -117,7 +117,9 @@ export default function WallSheet({
 
       <NotesPhotos kind="wall" id={wall.id} />
 
-      <p className="sheet-count">{wall.routes.length} routes</p>
+      <p className="sheet-count">
+        {wall.routes.length} route{wall.routes.length === 1 ? '' : 's'}
+      </p>
       <ul className="route-list">
         {wall.routes.map((r) => (
           <li key={r.id}>

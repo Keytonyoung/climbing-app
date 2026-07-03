@@ -175,26 +175,44 @@ export function getWallsGeoJSON(filter, overrides = {}) {
 export function searchWallsAndRoutes(query, limit = 25) {
   const q = query.trim().toLowerCase()
   if (q.length < 2) return []
-  const out = []
+  // Rank matches: name starts with the query (0) beats a word starting with it
+  // (1) beats a mid-word substring (2) — so "Otto" surfaces "Otto's ..." before
+  // "Big Bottom Lip". Ties break toward shorter names (tighter match).
+  const scoreOf = (name) => {
+    const n = name.toLowerCase()
+    const i = n.indexOf(q)
+    if (i < 0) return -1
+    if (i === 0) return 0
+    return /[^a-z0-9]/.test(n[i - 1]) ? 1 : 2
+  }
+  const scored = []
   for (const wall of walls()) {
-    if (wall.name.toLowerCase().includes(q)) {
-      out.push({ kind: 'wall', wallId: wall.id, title: wall.name, subtitle: wall.path.join(' › ') })
-      if (out.length >= limit) return out
+    const ws = scoreOf(wall.name)
+    if (ws >= 0) {
+      scored.push({
+        score: ws,
+        kind: 'wall',
+        wallId: wall.id,
+        title: wall.name,
+        subtitle: wall.path.join(' › '),
+      })
     }
     for (const r of wall.routes) {
-      if (r.name.toLowerCase().includes(q)) {
-        out.push({
+      const rs = scoreOf(r.name)
+      if (rs >= 0) {
+        scored.push({
+          score: rs,
           kind: 'route',
           wallId: wall.id,
           routeId: r.id,
           title: r.name,
           subtitle: `${r.grade ? r.grade + ' · ' : ''}${wall.name}`,
         })
-        if (out.length >= limit) return out
       }
     }
   }
-  return out
+  scored.sort((a, b) => a.score - b.score || a.title.length - b.title.length)
+  return scored.slice(0, limit).map(({ score, ...hit }) => hit) // eslint-disable-line no-unused-vars
 }
 
 /** Wall + route totals for the current filter (for the result count). */
