@@ -167,15 +167,16 @@ export default function App() {
 
     const attrib = new maplibregl.AttributionControl({ compact: true })
     map.current.addControl(attrib, 'top-right')
-    // The compact control renders itself EXPANDED on load (a full-width bar on
-    // phones); collapse it — the (i) button still opens it for the credits.
-    setTimeout(() => {
+    // The compact control re-EXPANDS itself every time attributions update
+    // while sources load (a full-width bar on phones). Collapse it once the
+    // map settles — the (i) button still opens it for the credits.
+    map.current.once('idle', () => {
       const el = attrib._container
       if (el) {
         el.removeAttribute('open')
         el.classList.remove('maplibregl-compact-show')
       }
-    }, 0)
+    })
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right')
     map.current.addControl(
       new maplibregl.GeolocateControl({ trackUserLocation: true }),
