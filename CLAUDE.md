@@ -1,9 +1,20 @@
-# PROJECT BRIEF — Western Slope Climbing App (working name: TBD)
+# PROJECT BRIEF — Cragward (formerly Western Slope Climbing App)
 
 This file is the project's constitution. It captures the goals, scope, architecture
 decisions, and reasoning agreed between Cole and Claude (June 2026, claude.ai
 feasibility study). Every future decision should be checked against this document.
 If a proposed change conflicts with it, flag the conflict explicitly before proceeding.
+
+---
+
+## AMENDMENT 2026-07-03 — launch-ready; READ THE HANDOFF FIRST
+
+v1 shipped and grew into **Cragward (cragward.com)** — public-ready, launch-pending.
+Active documents, in read order: **`docs/handoff.md`** (how to work here — working
+agreements, invariants, tooling gotchas; written at a model changeover),
+**`docs/growth-architecture-plan.md`** (strategy + evidence-gated roadmap; supersedes
+the phase plan below), **`docs/launch-kit.md`** (go-to-market). The next unit of
+progress is Cole launching to the community, not new code.
 
 ---
 
