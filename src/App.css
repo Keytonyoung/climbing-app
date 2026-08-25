@@ -1449,3 +1449,65 @@ select:focus-visible {
   border-radius: 50%;
   background: var(--color-danger);
 }
+
+/* Install walkthrough */
+.install-steps {
+  list-style: none;
+  margin: 14px 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.install-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.step-num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-text {
+  font-size: 15px;
+  line-height: 1.45;
+  padding-top: 2px;
+}
+/* Depicts a platform glyph inline in a sentence (e.g. the iOS Share icon). */
+.inline-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0 1px;
+  vertical-align: -6px;
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  background: var(--color-chip);
+  color: var(--color-text);
+}
+.install-cta {
+  margin: 14px 0 6px;
+}
+.welcome-install-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}

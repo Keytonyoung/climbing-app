@@ -50,6 +50,7 @@ import { downloadArea } from './lib/tiles'
 import { useSheetDismiss } from './lib/useSheetDismiss'
 import AuthSheet from './components/AuthSheet'
 import WelcomeOverlay from './components/WelcomeOverlay'
+import InstallGuide from './components/InstallGuide'
 import SearchSheet from './components/SearchSheet'
 import FeedSheet from './components/FeedSheet'
 import AdminSheet from './components/AdminSheet'
@@ -126,6 +127,7 @@ export default function App() {
 
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
+  const [showInstall, setShowInstall] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('welcomed'))
   const [toast, setToast] = useState(null)
   const [showSearch, setShowSearch] = useState(false)
@@ -1242,8 +1244,14 @@ export default function App() {
             setShowAuth(false)
             setShowWelcome(true)
           }}
+          onShowInstall={() => {
+            setShowAuth(false)
+            setShowInstall(true)
+          }}
         />
       )}
+
+      {showInstall && <InstallGuide onClose={() => setShowInstall(false)} />}
 
       {toast && <div className="toast">{toast}</div>}
 
@@ -1252,6 +1260,12 @@ export default function App() {
           onDismiss={() => {
             localStorage.setItem('welcomed', '1')
             setShowWelcome(false)
+          }}
+          onInstall={() => {
+            // Dismiss the welcome (they've seen it) and hand off to the guide.
+            localStorage.setItem('welcomed', '1')
+            setShowWelcome(false)
+            setShowInstall(true)
           }}
         />
       )}

@@ -13,6 +13,10 @@ export const EVENTS = {
   AREA_DOWNLOADED: 'area_downloaded',
   CONTRIBUTION_CREATED: 'contribution_created',
   SHARE: 'share',
+  // Added when home-screen install turned out to be a real drop-off point:
+  // installs are the top of the retention funnel (and protect offline storage),
+  // so the conversion is worth measuring.
+  INSTALLED: 'installed',
 }
 
 export function track(event, props) {

@@ -12,9 +12,10 @@ import {
   setMarketingOptIn,
 } from '../data/auth'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
+import { isStandalone } from '../lib/install'
 import { track, EVENTS } from '../lib/analytics'
 
-export default function AuthSheet({ onClose, onShowHelp }) {
+export default function AuthSheet({ onClose, onShowHelp, onShowInstall }) {
   const { user } = useAuth()
   const dismiss = useSheetDismiss(onClose)
   const [step, setStep] = useState('email') // 'email' | 'sent'
@@ -161,6 +162,9 @@ export default function AuthSheet({ onClose, onShowHelp }) {
       )}
 
       <footer className="auth-footer">
+        {!isStandalone() && (
+          <button className="link-btn" onClick={onShowInstall}>Add to home screen</button>
+        )}
         <button className="link-btn" onClick={onShowHelp}>Help &amp; safety</button>
         <a className="link-btn" href="mailto:keytonyoung@gmail.com?subject=Cragward%20feedback">
           Send feedback

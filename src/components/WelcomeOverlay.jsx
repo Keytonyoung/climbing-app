@@ -3,26 +3,10 @@
 // in localStorage. UI never talks to storage elsewhere, but this is a one-off
 // presentational flag, not app data.
 
-// Already running as an installed app? Then skip the install tip.
-function isStandalone() {
-  return (
-    window.matchMedia?.('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true
-  )
-}
+import { isStandalone } from '../lib/install'
 
-// iPhone/iPad (incl. iPadOS, which reports as Mac with touch).
-function isIOS() {
-  const ua = navigator.userAgent
-  return (
-    /iphone|ipad|ipod/i.test(ua) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  )
-}
-
-export default function WelcomeOverlay({ onDismiss }) {
+export default function WelcomeOverlay({ onDismiss, onInstall }) {
   const showInstall = !isStandalone()
-  const ios = isIOS()
 
   return (
     <div className="welcome-overlay">
@@ -46,18 +30,14 @@ export default function WelcomeOverlay({ onDismiss }) {
 
         {showInstall && (
           <div className="welcome-install">
-            <strong>Install Cragward — so your offline areas stay put</strong>
-            {ios ? (
-              <p>
-                In <strong>Safari</strong>, tap the Share button (the box with an ↑) at the
-                bottom, then <strong>Add to Home Screen</strong>.
-              </p>
-            ) : (
-              <p>
-                In <strong>Chrome</strong>, tap the <strong>⋮</strong> menu (top right), then
-                <strong> Install app</strong> (or Add to Home Screen).
-              </p>
-            )}
+            <strong>Put Cragward on your home screen</strong>
+            <p>
+              It opens like a real app, and your downloaded areas stay put. Takes about
+              ten seconds — we'll walk you through it.
+            </p>
+            <button className="welcome-install-btn" onClick={onInstall}>
+              Show me how
+            </button>
           </div>
         )}
 

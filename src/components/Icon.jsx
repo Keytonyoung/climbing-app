@@ -88,6 +88,24 @@ const PATHS = {
   ),
   // wall / mountain
   mountain: <path d="m8 3 4 8 5-5 5 15H2L8 3Z" />,
+  // The iOS Safari "Share" glyph, drawn as users actually see it (box with an
+  // arrow leaving the top) — "the box with an arrow" is the step people get
+  // stuck on, so we show it rather than describe it.
+  'ios-share': (
+    <>
+      <path d="M8 11H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2" />
+      <polyline points="8.5 6.5 12 3 15.5 6.5" />
+      <line x1="12" y1="3" x2="12" y2="14" />
+    </>
+  ),
+  // The Android/Chrome overflow menu glyph (three vertical dots).
+  'menu-dots': (
+    <>
+      <circle cx="12" cy="5" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
   // add photo (camera)
   camera: (
     <>
