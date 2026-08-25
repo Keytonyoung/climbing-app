@@ -95,7 +95,7 @@ export default function AdminSheet({ onPick, onClose }) {
               >
                 <span className="feed-line">
                   <span className="admin-kind">{KIND_LABEL[r.kind] || r.kind}</span>{' '}
-                  <strong>{r.authorName}</strong> — {r.summary}
+                  <strong>{r.authorName}</strong>: {r.summary}
                 </span>
                 <span className="feed-sub">
                   {fmt(r.createdAt)}

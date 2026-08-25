@@ -1,7 +1,7 @@
 // Persistent-storage helpers. Offline is the whole point of the app, but browsers
 // (iOS Safari especially) can EVICT IndexedDB + Cache under storage pressure or
 // after ~7 days of inactivity. Requesting "persistent" storage makes eviction far
-// less likely — it's the cheapest, highest-leverage protection for the offline
+// less likely. It's the cheapest, highest-leverage protection for the offline
 // promise. Installed PWAs are much more likely to be granted it, which is why we
 // nudge installation alongside this.
 

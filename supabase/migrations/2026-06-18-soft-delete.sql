@@ -7,7 +7,7 @@
 --   3. Rewrites the read rules so soft-deleted rows are HIDDEN from everyone
 --      except the admin (who needs to see them to undo).
 --   4. Lets the admin set/clear deleted_at on any row (remove + restore).
--- Nothing is ever hard-deleted by the admin path — "remove" just stamps a date,
+-- Nothing is ever hard-deleted by the admin path. "remove" just stamps a date,
 -- "undo" clears it.
 
 -- =========================================================================
@@ -64,7 +64,7 @@ create policy "wall_overrides read" on public.wall_overrides for select using (
 
 -- =========================================================================
 -- 4. Admin can update any row (to set/clear deleted_at). These are ADDITIONAL
---    permissive policies — they OR with the existing owner-only update rules,
+--    permissive policies. They OR with the existing owner-only update rules,
 --    so authors still manage their own rows and the admin can moderate all.
 --    (wall_overrides already allows any authenticated user to update, so the
 --    admin is covered there without a new policy.)

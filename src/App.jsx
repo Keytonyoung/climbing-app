@@ -183,7 +183,7 @@ export default function App() {
     map.current.addControl(attrib, 'top-right')
     // The compact control re-EXPANDS itself every time attributions update
     // while sources load (a full-width bar on phones). Collapse it once the
-    // map settles — the (i) button still opens it for the credits.
+    // map settles, the (i) button still opens it for the credits.
     map.current.once('idle', () => {
       const el = attrib._container
       if (el) {
@@ -228,7 +228,7 @@ export default function App() {
         clusterRadius: 45,
       })
 
-      // --- Approach trails (Cole's data) — lines under the point layers ---
+      // --- Approach trails (Cole's data). Lines under the point layers ---
       m.addSource('tracks', { type: 'geojson', data: getTracksGeoJSON([]) })
       m.addLayer({
         id: 'track',
@@ -281,7 +281,7 @@ export default function App() {
           'circle-stroke-color': '#ffffff',
         },
       })
-      // Wall names under the dots — without these the de-clustered map is a
+      // Wall names under the dots. Without these the de-clustered map is a
       // field of anonymous green dots. text-optional lets crowded labels drop
       // out instead of hiding the dot.
       m.addLayer({
@@ -441,7 +441,7 @@ export default function App() {
 
   // Load the saved-areas registry and check offline health once at startup: if
   // areas were saved but the tile cache is empty, the browser EVICTED offline
-  // storage (classic iOS) — warn now, not at a signal-less trailhead.
+  // storage (classic iOS). Warn now, not at a signal-less trailhead.
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -451,7 +451,7 @@ export default function App() {
       setSavedAreas(areas)
       setOfflineHealth(health)
       if (health.evicted) {
-        showToast('⚠ Your phone cleared the saved offline maps — re-download your areas before the next trip.')
+        showToast('⚠ Your phone cleared the saved offline maps. Re-download your areas before the next trip.')
       }
     })()
     return () => {
@@ -461,7 +461,7 @@ export default function App() {
   }, [])
 
   // When a NEW build's service worker takes control mid-session, reload once so
-  // the user is on the latest version immediately — instead of one launch
+  // the user is on the latest version immediately. Instead of one launch
   // behind (the "close and reopen twice" PWA dance). Never during a trail
   // recording (a reload would lose it); the session flag prevents reload loops.
   useEffect(() => {
@@ -671,14 +671,14 @@ export default function App() {
 
   async function requestWakeLock() {
     if (!('wakeLock' in navigator)) {
-      setWakeWarning('Screen may sleep — keep the app open and tap to wake.')
+      setWakeWarning('Screen may sleep. Keep the app open and tap to wake.')
       return
     }
     try {
       wakeLockRef.current = await navigator.wakeLock.request('screen')
       setWakeWarning(null)
     } catch {
-      setWakeWarning('Screen may sleep — keep the app open and tap to wake.')
+      setWakeWarning('Screen may sleep. Keep the app open and tap to wake.')
     }
   }
 
@@ -753,7 +753,7 @@ export default function App() {
     const coords = recCoordsRef.current
     setLiveLine([])
     if (coords.length < 2) {
-      setGeoError('Trail too short to save — walk a bit farther next time.')
+      setGeoError('Trail too short to save. Walk a bit farther next time.')
       return
     }
     setSaveDraft({
@@ -845,7 +845,7 @@ export default function App() {
     closeSheets()
   }
   const toggleAdd = () => {
-    // Adding pins writes to the shared backend — require sign-in first.
+    // Adding pins writes to the shared backend. Require sign-in first.
     if (!user && !adding) {
       setShowAuth(true)
       return
@@ -862,7 +862,7 @@ export default function App() {
   }
   /**
    * Start adding access beta for a specific wall, from that wall's sheet.
-   * Contributing what you know should be one tap — not close-the-sheet, find
+   * Contributing what you know should be one tap, not close-the-sheet, find
    * the Pin button, then hunt the map for the right spot. Flies to the wall
    * first so the placement is already in the right neighbourhood.
    */
@@ -884,7 +884,7 @@ export default function App() {
 
   const toggleTrack = () => {
     if (recording) return // don't hide an active recording
-    // Recording a trail writes to the shared backend — require sign-in first.
+    // Recording a trail writes to the shared backend. Require sign-in first.
     if (!user && !showTrack) {
       setShowAuth(true)
       return
@@ -909,7 +909,7 @@ export default function App() {
     if (!canDownloadArea(user)) return // free for everyone today; seam for later
     setDl({ running: true, phase: 'tiles', done: 0, total: 0 })
     try {
-      // Ask for durable storage before we fill it — this is the moment offline
+      // Ask for durable storage before we fill it. This is the moment offline
       // data matters most, and it's when a grant is most likely to stick.
       const persisted = await ensurePersistentStorage()
       // 1. Map tiles.
@@ -993,7 +993,7 @@ export default function App() {
     setSelectedTrack(null)
   }
 
-  // Open a wall (and optionally a route) by id — used by shared deep links.
+  // Open a wall (and optionally a route) by id. Used by shared deep links.
   function openWallById(wallId, routeId) {
     const w = getWall(wallId)
     if (!w) return
@@ -1037,7 +1037,7 @@ export default function App() {
 
   return (
     <div id="app">
-      {offline && <div className="offline-bar">Offline — showing saved data; changes sync later</div>}
+      {offline && <div className="offline-bar">Offline: showing saved data, changes sync later</div>}
       <header id="top-bar">
         <h1>Cragward</h1>
         <button
@@ -1094,7 +1094,7 @@ export default function App() {
         <div className="sheet" style={fixDismiss.style}>
           <div className="sheet-handle" {...fixDismiss.handleProps} />
           <header className="sheet-header">
-            <h2>Fix location — {locating.name}</h2>
+            <h2>Fix location: {locating.name}</h2>
             <button className="sheet-close" onClick={cancelFixLocation} aria-label="Close">✕</button>
           </header>
           <div className="filter-panel">

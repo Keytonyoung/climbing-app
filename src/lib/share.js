@@ -21,7 +21,7 @@ export async function shareOrCopy(url, title) {
       track(EVENTS.SHARE, { method: 'native' })
       return 'shared'
     } catch {
-      /* user cancelled or share failed — fall through to copy */
+      /* user cancelled or share failed. Fall through to copy */
     }
   }
   try {

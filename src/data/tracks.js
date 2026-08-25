@@ -4,7 +4,7 @@
 //
 // A trail goes from one anchor to another, where an anchor is { kind: 'pin' |
 // 'wall', id }. The trail also keeps its own coordinates, so a deleted anchor
-// never leaves an unrenderable trail — resolveAnchor falls back to the geometry.
+// never leaves an unrenderable trail. ResolveAnchor falls back to the geometry.
 
 import { supabase } from './supabase'
 import { getCurrentUser, getDisplayNames, displayName } from './auth'
@@ -131,7 +131,7 @@ export function getTracksForWall(wallId, tracks) {
 }
 
 /**
- * Access pins for a wall — "getting there." Trail-linked pins are the real
+ * Access pins for a wall. "getting there." Trail-linked pins are the real
  * connection (a recorded approach ties this parking/trailhead to the wall at
  * any distance) and come first; pins within `maxMeters` are a proximity
  * fallback for access that has no recorded trail yet. Returns

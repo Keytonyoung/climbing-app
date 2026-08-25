@@ -6,7 +6,7 @@
 // crag, and the app must work fully offline. We fetch once, flatten the data
 // into our own format, and bundle it. See CLAUDE.md sections 4-5.
 //
-// Output: src/data/seed/western-co.json — a flat list of WALLS, each carrying
+// Output: src/data/seed/western-co.json, a flat list of WALLS, each carrying
 // its routes. We pin walls (not individual routes) because OpenBeta routes
 // inherit their wall's coordinates, so per-route pins would overlap exactly.
 
@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url'
 
 const API = 'https://api.openbeta.io'
 
-// Areas to seed (OpenBeta region/area names — verified to resolve to data).
+// Areas to seed (OpenBeta region/area names, verified to resolve to data).
 // Add more here as Cole's climbing expands. NOTE: this bundles route data into
 // the app and is near its practical ceiling (~7.5k routes); broader coverage
 // needs the backend route re-architecture (see docs/v1-multiuser-plan.md).
@@ -119,7 +119,7 @@ async function main() {
     console.log(`Removed ${walls.length - unique.length} duplicate walls.`)
   }
 
-  // Drop walls without usable coordinates — they can't be placed on the map.
+  // Drop walls without usable coordinates. They can't be placed on the map.
   const placeable = unique.filter((w) => w.lat != null && w.lng != null)
   const dropped = unique.length - placeable.length
   if (dropped > 0) console.log(`Skipped ${dropped} walls with no coordinates.`)

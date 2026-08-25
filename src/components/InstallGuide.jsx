@@ -1,4 +1,4 @@
-// "Put Cragward on your home screen" — the walkthrough. Installing was the
+// "Put Cragward on your home screen", the walkthrough. Installing was the
 // single biggest drop-off Cole saw when showing the app to people, so this
 // meets each platform where it actually is instead of one generic paragraph:
 //   android      → the browser's own one-tap install dialog
@@ -47,7 +47,7 @@ export default function InstallGuide({ onClose }) {
       </header>
 
       <p className="detail-desc muted">
-        Installed, Cragward opens like a real app — full screen, and your downloaded
+        Installed, Cragward opens like a real app: full screen, and your downloaded
         areas are far less likely to be cleared by the phone.
       </p>
 
@@ -59,7 +59,7 @@ export default function InstallGuide({ onClose }) {
           </button>
           {result === 'dismissed' && (
             <p className="detail-desc muted">
-              No problem — tap Install again whenever you're ready.
+              No problem. Tap Install again whenever you're ready.
             </p>
           )}
         </>
@@ -76,7 +76,7 @@ export default function InstallGuide({ onClose }) {
             Scroll down the list and tap <strong>Add to Home Screen</strong>.
           </Step>
           <Step n="3">
-            Tap <strong>Add</strong> — Cragward lands on your home screen like any other app.
+            Tap <strong>Add</strong>, and Cragward lands on your home screen like any other app.
           </Step>
         </Steps>
       )}
@@ -113,7 +113,7 @@ export default function InstallGuide({ onClose }) {
           <Step n="2">
             Tap <strong>Install app</strong> (some browsers call it Add to Home screen).
           </Step>
-          <Step n="3">Confirm — Cragward appears with your other apps.</Step>
+          <Step n="3">Confirm, and Cragward appears with your other apps.</Step>
         </Steps>
       )}
 

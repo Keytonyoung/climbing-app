@@ -3,7 +3,7 @@
 // reads all pins; only signed-in users can write, and only their own rows
 // (enforced by Row-Level Security in supabase/schema.sql).
 //
-// Stage A3: online path. Offline caching/sync returns in Stage B — until then
+// Stage A3: online path. Offline caching/sync returns in Stage B. Until then
 // these need connectivity.
 
 import { supabase } from './supabase'
@@ -11,7 +11,7 @@ import { getCurrentUser, getDisplayNames, displayName } from './auth'
 import { isOnline, cachePutAll, cacheGetAll, cachePut, cacheDelete, enqueue } from './sync'
 
 // Pin categories: the single source of truth for labels and map colors.
-// Palette: "High Desert" (see src/index.css) — each reads distinct from the
+// Palette: "High Desert" (see src/index.css). Each reads distinct from the
 // terracotta (#b6532f) climbing walls while staying warm/harmonized.
 export const CATEGORIES = [
   { key: 'parking', label: 'Parking', color: '#3a6ea5' }, // denim sky

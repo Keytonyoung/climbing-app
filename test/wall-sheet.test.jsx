@@ -34,7 +34,7 @@ function render(props) {
   )
 }
 
-describe('wall sheet — contributing access', () => {
+describe('wall sheet: contributing access', () => {
   it('invites the first contribution when a crag has no access beta', () => {
     const html = render({ access: [], tracks: [] })
     expect(html).toContain('Know how to get to Otis Boulder?')

@@ -1,4 +1,4 @@
-// IndexedDB connection. Owned by the data layer — UI never imports this directly
+// IndexedDB connection. Owned by the data layer. UI never imports this directly
 // (CLAUDE.md rule 2). Now serves the OFFLINE layer (Stage B): the pins/tracks/
 // notes stores hold a read cache of shared data (Supabase ROW shape), and the
 // outbox holds writes made offline, to flush on reconnect. See sync.js.
@@ -44,7 +44,7 @@ export function getDB() {
           const ticks = db.createObjectStore('ticks', { keyPath: 'id' })
           ticks.createIndex('route_id', 'route_id')
         }
-        // v7: drop the dead local 'photos' store — photos now live in Supabase
+        // v7: drop the dead local 'photos' store. Photos now live in Supabase
         // Storage (see notes.js), so the IndexedDB copy is no longer used.
         if (oldVersion < 7 && db.objectStoreNames.contains('photos')) {
           db.deleteObjectStore('photos')

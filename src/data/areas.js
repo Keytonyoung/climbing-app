@@ -1,7 +1,7 @@
-// Saved-offline-areas registry (data layer — UI goes through these functions).
+// Saved-offline-areas registry (data layer, UI goes through these functions).
 // Every "Save area offline" records what was saved (name, bounds, date, counts)
 // so the app can SHOW the user what they have, re-download an area in one tap,
-// and — critically — DETECT when the browser evicted the offline caches (iOS
+// and, critically, DETECT when the browser evicted the offline caches (iOS
 // does this under storage pressure / after inactivity) instead of letting them
 // discover it at a signal-less trailhead.
 
@@ -55,7 +55,7 @@ export async function deleteSavedArea(id) {
  * Eviction detection: if the registry says areas were saved but the service-
  * worker tile cache is EMPTY, the browser purged offline storage (the classic
  * iOS eviction). Returns { evicted, areaCount } so the UI can warn and offer
- * one-tap re-downloads. Never throws — offline health checks must be harmless.
+ * one-tap re-downloads. Never throws. Offline health checks must be harmless.
  */
 export async function checkOfflineHealth() {
   try {

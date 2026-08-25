@@ -29,7 +29,7 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
           <span className="badge">{categoryLabel(pin.category)}</span>
         </div>
         {pin.sensitive && (
-          <p className="sensitive-note">Sensitive access — please keep it low-key.</p>
+          <p className="sensitive-note">Sensitive access. Please keep it low-key.</p>
         )}
         {pin.notes && <p className="detail-desc">{pin.notes}</p>}
         <button className="directions-btn" onClick={() => openDirections(pin.lat, pin.lng)}>
@@ -82,7 +82,7 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
         <textarea
           className="pin-textarea"
           value={notes}
-          placeholder="Anything useful — gate code, 4WD only, hard to spot…"
+          placeholder="Anything useful: gate code, 4WD only, hard to spot…"
           rows={3}
           onChange={(e) => setNotes(e.target.value)}
         />
@@ -91,7 +91,7 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
       <label className="opt-in-row">
         <input type="checkbox" checked={sensitive} onChange={(e) => setSensitive(e.target.checked)} />
         <span>
-          Sensitive access — keep it low-key. Mark this if broadcasting the parking or
+          Sensitive access, keep it low-key. Mark this if broadcasting the parking or
           approach could threaten access to the crag.
         </span>
       </label>

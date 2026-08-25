@@ -1,6 +1,6 @@
 // Data-layer interface for notes and photos on routes and walls (CLAUDE.md
 // rule 2). NOTES are now a SHARED, timestamped thread in Supabase: many entries
-// per route/wall, each authored and dated — the seed of the social layer.
+// per route/wall, each authored and dated, the seed of the social layer.
 // Everyone reads; signed-in users add; you can delete your own.
 //
 // PHOTOS still live locally in IndexedDB for now (Stage A4 moves them to
@@ -156,7 +156,7 @@ export async function getPhotos(kind, id) {
  * caches them, see vite.config.js). Returns counts.
  *
  * The tables are small (trusted group), so we fetch them whole and filter
- * client-side — avoids giant `.in(routeIds)` queries. When the data grows, add
+ * client-side. Avoids giant `.in(routeIds)` queries. When the data grows, add
  * a server-side area key and query by it instead.
  */
 export async function prefetchBeta(wallIds, routeIds, { onProgress } = {}) {

@@ -8,7 +8,7 @@
 import { readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-const CAP = 4 * 1024 * 1024 // 4 MiB — must match vite.config.js
+const CAP = 4 * 1024 * 1024 // 4 MiB. Must match vite.config.js
 const WARN_AT = 0.85 // warn once we're within 85% of the cap
 const ASSETS = join(process.cwd(), 'dist', 'assets')
 
@@ -18,7 +18,7 @@ let files
 try {
   files = readdirSync(ASSETS)
 } catch {
-  console.error('seed-size check: dist/assets not found — did the build run?')
+  console.error('seed-size check: dist/assets not found, did the build run?')
   process.exit(1)
 }
 
@@ -31,7 +31,7 @@ if (!seed) {
 const size = statSync(join(ASSETS, seed)).size
 if (size >= CAP) {
   console.error(
-    `\n✖ Route-seed chunk is ${mb(size)} — at/over the ${mb(CAP)} offline-precache cap.\n` +
+    `\n✖ Route-seed chunk is ${mb(size)}. At/over the ${mb(CAP)} offline-precache cap.\n` +
       `  The service worker will NOT cache it and offline will break at the crag.\n` +
       `  Trim the seed or move routes to the backend before shipping.\n`
   )
@@ -39,7 +39,7 @@ if (size >= CAP) {
 }
 
 if (size >= CAP * WARN_AT) {
-  console.warn(`⚠ Route-seed chunk is ${mb(size)} — approaching the ${mb(CAP)} offline cap. Plan ahead.`)
+  console.warn(`⚠ Route-seed chunk is ${mb(size)}, approaching the ${mb(CAP)} offline cap. Plan ahead.`)
 } else {
   console.log(`✓ Route-seed chunk ${mb(size)} (offline cap ${mb(CAP)}).`)
 }

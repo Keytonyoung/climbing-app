@@ -1,12 +1,12 @@
 // Data-layer interface for user reports ("flag this"). Signed-in users flag
 // content that's bad/unsafe/spam; admins review via the reports table (RLS in
 // supabase/migrations/2026-06-30-stage1-community.sql). This is the community's
-// eyes — you can't watch everything alone once strangers arrive.
+// eyes. You can't watch everything alone once strangers arrive.
 
 import { supabase } from './supabase'
 import { getCurrentUser } from './auth'
 
-/** File a report against a target (requires sign-in). Online-only — reporting is
+/** File a report against a target (requires sign-in). Online-only. Reporting is
  *  a moderation action, not crag-side beta, so it doesn't need the offline queue. */
 export async function reportContent(targetKind, targetId, reason = '') {
   const user = await getCurrentUser()

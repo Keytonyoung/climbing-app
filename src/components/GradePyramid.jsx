@@ -1,5 +1,5 @@
 // Grade pyramid for the personal logbook ("You" tab): how many distinct routes
-// you've sent at each grade. The classic climbing-progress view — as you
+// you've sent at each grade. The classic climbing-progress view. As you
 // improve, the mass shifts upward. Built entirely from tick data you already
 // log (route grades come from the seed via routeRef), so it needs no extra input.
 

@@ -2,7 +2,7 @@
 //
 // Locks down the offline-identity rule (see data/auth.js): the cached identity
 // is authoritative and ONLY an explicit signOut() clears it. This bug reached a
-// real crag twice — once because nothing persisted the user, and once because
+// real crag twice. Once because nothing persisted the user, and once because
 // the guards trusted navigator.onLine, which reads TRUE on a one-bar connection
 // where every request times out. These tests exist so it can't come back.
 import { describe, it, expect, beforeEach, vi } from 'vitest'

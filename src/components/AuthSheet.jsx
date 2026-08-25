@@ -124,7 +124,7 @@ export default function AuthSheet({ onClose, onShowHelp, onShowInstall }) {
         <div className="auth-body">
           <p className="auth-intro">
             Anyone can browse. To add pins, trails, notes, and photos, sign in with
-            your email — we'll send a sign-in link (no password).
+            your email. We'll send a sign-in link (no password).
           </p>
 
           {step === 'email' ? (

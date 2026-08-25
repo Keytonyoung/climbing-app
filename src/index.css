@@ -1,16 +1,16 @@
-/* Design tokens — "High Desert" (warm canyon palette: basalt chrome, canyon-
+/* Design tokens. "High Desert" (warm canyon palette: basalt chrome, canyon-
    light canvas, terracotta reserved for the actions and the rock itself).
    Discipline is the design: neutrals do 90% of the work; terracotta only where
    it MEANS something. All app chrome pulls from these tokens.
-   Map-layer + pin-icon colors live in JS (App.jsx, pins.js) — keep in sync. */
+   Map-layer + pin-icon colors live in JS (App.jsx, pins.js). Keep in sync. */
 :root {
   /* palette */
-  --basalt: #26201b; /* header / dark surfaces — warm near-black */
-  --ink: #2b241d; /* primary text — warm espresso charcoal */
-  --terracotta: #b6532f; /* primary accent — canyon sandstone */
+  --basalt: #26201b; /* header / dark surfaces. Warm near-black */
+  --ink: #2b241d; /* primary text. Warm espresso charcoal */
+  --terracotta: #b6532f; /* primary accent. Canyon sandstone */
   --terracotta-deep: #97401f; /* hover / pressed */
   --terracotta-tint: #f7e9e1; /* subtle warm fill */
-  --canyon-light: #faf6f0; /* app background — desert morning light */
+  --canyon-light: #faf6f0; /* app background. Desert morning light */
   --line: #eae1d6; /* hairline borders, warm */
   --surface: #ffffff; /* cards / sheets */
   --sky-teal: #1f7d74; /* trails / the counterweight accent */
@@ -30,7 +30,7 @@
   --color-danger: #a52a2a;
   --color-chip: #f3ece3; /* subtle sand-tint fill for badges/chips */
 
-  /* shape — layered soft shadows read premium; single hard ones read flat */
+  /* shape. Layered soft shadows read premium; single hard ones read flat */
   --radius: 10px;
   --radius-sm: 7px;
   --shadow: 0 1px 2px rgba(43, 33, 24, 0.07), 0 4px 16px rgba(43, 33, 24, 0.1);

@@ -1,4 +1,4 @@
--- Migration: Stage 1 community groundwork — trust tiers, marketing opt-in, reports.
+-- Migration: Stage 1 community groundwork. Trust tiers, marketing opt-in, reports.
 -- Paste into the Supabase SQL Editor and run once. Safe to re-run.
 -- Pairs with code that lands after this runs (report button, opt-in checkbox);
 -- until then these columns/tables are simply unused.
@@ -14,7 +14,7 @@ alter table public.profiles
 
 -- =========================================================================
 -- 2. Marketing opt-in (separate from the transactional auth email). Unchecked by
---    default — we only email updates to people who explicitly say yes.
+--    default. We only email updates to people who explicitly say yes.
 -- =========================================================================
 alter table public.profiles
   add column if not exists marketing_opt_in boolean not null default false;

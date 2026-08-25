@@ -1,6 +1,6 @@
 // Saved offline areas: what you have, how fresh it is, one-tap update, and a
 // loud warning when the browser evicted the offline caches. Offline you can
-// SEE is offline you can trust — the app's whole promise depends on it.
+// SEE is offline you can trust, the app's whole promise depends on it.
 
 import Icon from './Icon'
 import { useSheetDismiss } from '../lib/useSheetDismiss'
@@ -32,13 +32,13 @@ export default function OfflineAreasSheet({
       {health?.evicted && (
         <p className="sensitive-note">
           Your phone cleared the saved offline maps to free space. Tap Update on the
-          areas you need before your next trip — and keep the app installed so it
+          areas you need before your next trip, and keep the app installed so it
           happens less.
         </p>
       )}
 
       <p className="detail-desc muted">
-        A saved area works fully in airplane mode — map, routes, notes, and photos.
+        A saved area works fully in airplane mode: map, routes, notes, and photos.
         Update an area on wifi to pick up new beta.
       </p>
 

@@ -1,5 +1,5 @@
 // PWA installation: platform detection plus the browser's own one-tap install
-// where it exists. Installing matters more for Cragward than for most web apps —
+// where it exists. Installing matters more for Cragward than for most web apps:
 // an installed PWA gets far more durable storage, which is what stops iOS from
 // evicting downloaded crags (see data/areas.js), and it launches full-screen.
 //
@@ -70,7 +70,7 @@ export function isStandalone() {
  * The 'ios-other' case is the one that silently defeats people: on iPhone,
  * Add to Home Screen is a Safari feature. Someone browsing in Chrome or
  * Firefox on iOS follows "tap Share → Add to Home Screen", can't find it, and
- * gives up — so they need to be told to switch browsers first.
+ * gives up, so they need to be told to switch browsers first.
  */
 export function getPlatform() {
   if (typeof navigator === 'undefined') return 'desktop'

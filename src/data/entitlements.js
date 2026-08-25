@@ -1,4 +1,4 @@
-// Entitlement seam (monetization, designed-toward-not-activated — see
+// Entitlement seam (monetization, designed-toward-not-activated, see
 // docs/growth-architecture-plan.md §5/§11). Everything is free right now; every
 // premium-capable action is routed through one predicate so a future freemium
 // tier (e.g. paid offline downloads, the AllTrails model) becomes a change HERE,

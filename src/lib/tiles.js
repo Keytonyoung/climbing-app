@@ -1,5 +1,5 @@
 // Prefetch the map tiles for the current view so the basemap survives offline.
-// We just fetch each tile URL — the service worker (vite-plugin-pwa runtime
+// We just fetch each tile URL, the service worker (vite-plugin-pwa runtime
 // caching, see vite.config.js) stores the responses, so a later offline visit
 // serves them from cache. Glyphs/sprites/style are already cached on first load.
 
@@ -34,7 +34,7 @@ export async function downloadArea(map, { bounds, zoom, extraZoom = 2, maxTiles 
   const templates = []
   for (const id of Object.keys(style.sources || {})) {
     const src = map.getSource(id)
-    // Only the vector basemap — skip the low-zoom raster (404s at crag zooms)
+    // Only the vector basemap. Skip the low-zoom raster (404s at crag zooms)
     // and the satellite layer (huge; intentionally online-only).
     if (src?.type === 'vector' && src?.tiles?.length) templates.push(...src.tiles)
   }

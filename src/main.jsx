@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-// Self-hosted Inter (variable weight) — bundled + precached by the service
+// Self-hosted Inter (variable weight). Bundled + precached by the service
 // worker, so the real typeface renders offline too (no CDN dependency).
 import '@fontsource-variable/inter'
 import './index.css'

@@ -65,7 +65,7 @@ export default function NotesPhotos({ kind, id }) {
     if (!confirm('Report this to the moderators as inappropriate or inaccurate?')) return
     try {
       await reportContent(targetKind, targetId)
-      alert('Thanks — reported. We’ll take a look.')
+      alert('Thanks for reporting. We’ll take a look.')
     } catch (e) {
       alert(`Couldn’t report: ${e.message || e}`)
     }
@@ -142,7 +142,7 @@ export default function NotesPhotos({ kind, id }) {
           <textarea
             className="pin-textarea"
             value={draft}
-            placeholder="Add beta — sequence, gear, conditions, where to find it…"
+            placeholder="Add beta: sequence, gear, conditions, where to find it…"
             rows={2}
             onChange={(e) => setDraft(e.target.value)}
           />

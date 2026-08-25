@@ -11,7 +11,7 @@ export default defineConfig({
       workbox: {
         // The bundled route seed pushes the main JS chunk past Workbox's 2 MiB
         // default precache cap. Raise it so the app shell still precaches for
-        // offline. (Long-term fix: move routes to the backend — see the plan.)
+        // offline. (Long-term fix: move routes to the backend, see the plan.)
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Cache OpenFreeMap tiles, glyphs, sprites, and the style JSON so a
         // downloaded area (and anything viewed online) renders offline.
@@ -26,7 +26,7 @@ export default defineConfig({
             },
           },
           {
-            // Photos served from Supabase Storage — cache the bytes when viewed
+            // Photos served from Supabase Storage. Cache the bytes when viewed
             // online so they render offline at the crag (mirrors the tile cache).
             urlPattern: /\/storage\/v1\/object\/public\/photos\/.*/i,
             handler: 'CacheFirst',
@@ -41,7 +41,7 @@ export default defineConfig({
       manifest: {
         name: 'Cragward',
         short_name: 'Cragward',
-        description: 'Find the wall and climb offline — parking, approach trails, and local beta for the crags you climb.',
+        description: 'Find the wall and climb offline. Parking, approach trails, and local beta for the crags you climb.',
         theme_color: '#26201b',
         background_color: '#faf6f0',
         display: 'standalone',

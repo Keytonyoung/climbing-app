@@ -1,4 +1,4 @@
-// The app's icon set — one consistent, stroke-based family (Lucide-style
+// The app's icon set. One consistent, stroke-based family (Lucide-style
 // geometry) instead of platform emoji, which render differently on every
 // device and cheapen the UI. Icons inherit currentColor so they follow the
 // palette wherever they're placed.
@@ -89,7 +89,7 @@ const PATHS = {
   // wall / mountain
   mountain: <path d="m8 3 4 8 5-5 5 15H2L8 3Z" />,
   // The iOS Safari "Share" glyph, drawn as users actually see it (box with an
-  // arrow leaving the top) — "the box with an arrow" is the step people get
+  // arrow leaving the top). "the box with an arrow" is the step people get
   // stuck on, so we show it rather than describe it.
   'ios-share': (
     <>

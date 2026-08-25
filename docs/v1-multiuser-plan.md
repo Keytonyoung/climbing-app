@@ -1,4 +1,4 @@
-# Western Slope Climbing — v1 Multi-User Plan
+# Western Slope Climbing: v1 Multi-User Plan
 
 **Status:** active plan as of 2026-06-13. Target: functional shared v1 by **2026-06-20**.
 This document guides all sessions until v1 is done. If a change conflicts with it, flag
@@ -17,34 +17,34 @@ once confirmed.
 
 ---
 
-## #1 POST-LAUNCH FEATURE — Strava-style climb logging + activity feed
+## #1 POST-LAUNCH FEATURE: Strava-style climb logging + activity feed
 
 Decided 2026-06-13 (Cole's idea, refined). The marquee feature *after* friends are
-using the core app — evidence-gated and benefits from seeing real usage first.
+using the core app. Evidence-gated and benefits from seeing real usage first.
 - **Log an ascent** on a route: date, style (onsight/flash/redpoint/repeat/TR), optional
   note + felt-grade, and a **public/private toggle**.
 - **`ticks` (ascents) table**: id, author_id, route_id, wall_id, date, style, note,
   felt_grade, is_public, created_at. RLS: read public-or-own, write own.
 - **Activity feed**: friends' recent public logs ("Cole sent Sisyphus 5.11d 🔴 yesterday")
-  — the social/engagement loop. Your own **logbook** view too.
+, the social/engagement loop. Your own **logbook** view too.
 - This generates content automatically, creates the social pull, and is the literal
   "platforms are built by the people on them" mechanism. Reuses the data-layer + offline
-  sync patterns. **NOT in-app chat** — that's redundant with texting + the share link.
+  sync patterns. **NOT in-app chat**. That's redundant with texting + the share link.
 
 ## 1. The vision we are building toward
 
 Trajectory (each step gated by real evidence, not built on spec):
 
-1. **Solo PWA** — done (pins, trails, notes, photos, all local).
+1. **Solo PWA**: done (pins, trails, notes, photos, all local).
 2. **Trusted friend-group sharing** ← THE MILESTONE we build now. Cole records a route's
    trail + photos + notes; invited buddies open the app and see it. "I did this yesterday,
    go check it out."
-3. **Organic growth** — buddies contribute their own beta; their data is how it scales.
+3. **Organic growth**: buddies contribute their own beta; their data is how it scales.
    "Platforms are built by the people on them."
-4. **Turning point** — if lots of people use it, *then* decide on the full-scale buildout.
+4. **Turning point**: if lots of people use it, *then* decide on the full-scale buildout.
 
 **End-goal to build toward (NOT build yet):** a social, interactive platform. Notes/comments
-tied to a route, time-ordered, by identified authors — e.g. 6/13 "gear stuck on this route",
+tied to a route, time-ordered, by identified authors. E.g. 6/13 "gear stuck on this route",
 6/15 "I pulled it down, it's at the trailhead." This is why identity + a relational/realtime
 backend matter now even though the social UI comes later.
 
@@ -57,10 +57,10 @@ backend matter now even though the social UI comes later.
   author/target/timestamp/parent_id), Realtime gives the live "social" feel, it has the
   offline-sync ecosystem (PowerSync/Electric), and data exports cleanly ("never trapped").
 - **The data-layer (rule #2) is the swap point.** UI never touches storage directly, so
-  going multi-user rewires `src/data/*.js` — not a rewrite.
+  going multi-user rewires `src/data/*.js`, not a rewrite.
 - **Access model:** reading is **open via link**; **contributing requires identity.** No
   anonymous edit (attribution is foundational to the social goal + prevents link-leak abuse).
-- **Onboarding:** **messageable invite links** — Cole texts a link, buddy taps it, does a
+- **Onboarding:** **messageable invite links**: Cole texts a link, buddy taps it, does a
   one-tap identity step (magic-link / OTP), they're in.
 - **Sharing scope:** everything you add is shared with the group (no private/public toggle
   in v1).
@@ -71,7 +71,7 @@ backend matter now even though the social UI comes later.
   last-write-wins). **PowerSync** is the escape hatch if it gets painful.
 - **3d (GeoJSON export/import): dropped.** A backend supersedes its purpose; Supabase export
   preserves the "never trapped" guarantee.
-- **Frontend hosting stays GitHub Pages** (free, static) — it just now talks to Supabase.
+- **Frontend hosting stays GitHub Pages** (free, static): it just now talks to Supabase.
 - **Cost:** free tier during the active build weekend (stays awake while active); flip to
   **Supabase Pro (~$25/mo)** by ~6/20 before broad sharing + photo uploads. Domain ~$11/yr.
   Free projects sleep after ~7 idle days (data preserved, one-click restore).
@@ -80,24 +80,24 @@ backend matter now even though the social UI comes later.
 
 ## 3. Two different "offlines" (don't conflate)
 
-1. **Offline data sync** — record beta at the crag (no signal), sync up on reconnect.
+1. **Offline data sync**: record beta at the crag (no signal), sync up on reconnect.
    Needed for the sharing milestone. (Stage B1.)
-2. **Offline map tiles** — the basemap doesn't go blank with no signal (original Phase 2).
+2. **Offline map tiles**: the basemap doesn't go blank with no signal (original Phase 2).
    Needed for at-the-crag navigation. (Stage B2.)
 
 ---
 
 ## 4. Target data model (Supabase / Postgres)
 
-- `profiles` — id (= auth user), display_name. Created on first sign-in.
-- `pins` — id (uuid, client-gen), author_id, category, label, notes, lng, lat, created_at,
+- `profiles`: id (= auth user), display_name. Created on first sign-in.
+- `pins`: id (uuid, client-gen), author_id, category, label, notes, lng, lat, created_at,
   updated_at.
-- `tracks` — id, author_id, name, notes, start (jsonb anchor), end (jsonb anchor),
+- `tracks`: id, author_id, name, notes, start (jsonb anchor), end (jsonb anchor),
   geometry (coordinates), length_m, created_at, updated_at.
-- `notes` — id, author_id, target_kind ('route'|'wall'), target_id, text, created_at,
-  updated_at. NOTE: now **many per target** (each authored) — this is already the seed of
+- `notes`: id, author_id, target_kind ('route'|'wall'), target_id, text, created_at,
+  updated_at. NOTE: now **many per target** (each authored). This is already the seed of
   the comment/social model.
-- `photos` — id, author_id, target_kind, target_id, storage_path, created_at. Blob lives in
+- `photos`: id, author_id, target_kind, target_id, storage_path, created_at. Blob lives in
   Supabase Storage; row references it.
 - OpenBeta walls/routes stay **bundled + read-only** (seed). User-created routes/walls are a
   later table; out of scope for v1 unless time allows.
@@ -108,7 +108,7 @@ backend matter now even though the social UI comes later.
 
 ## 5. Stages & sequencing (toward 6/20)
 
-### Stage A — Sharing backbone (free tier, build weekend)
+### Stage A: Sharing backbone (free tier, build weekend)
 - **A1.** Supabase project: schema (§4) + RLS + auth (magic-link) + invite-link flow.
 - **A2.** Auth UI: sign-in, "who am I", invite-link onboarding (messageable).
 - **A3.** Rewire `src/data/*.js` to read shared data from Supabase and write up (online
@@ -116,15 +116,15 @@ backend matter now even though the social UI comes later.
 - **A4.** Photos → Supabase Storage (upload on save; thumbnails via signed/public URLs).
 - **A5.** Attribution in the UI: show who left each pin/note/trail/photo.
 
-### Stage B — Crag-ready
+### Stage B: Crag-ready
 - **B1.** Offline write queue + sync-on-reconnect (queue-and-flush; photo upload queue).
-- **B2.** Offline map tiles — per-area download (original Phase 2; scope to per-area, not
+- **B2.** Offline map tiles: per-area download (original Phase 2; scope to per-area, not
   whole-state).
 - **B3.** Offline read cache of shared data (so buddies see beta with no signal).
 
 ### v1 "done" (target 6/20)
-A buddy can: open the app, see Cole's trail/photos/notes for an area, and — for an area
-preloaded while on wifi — navigate it at the crag in airplane mode. Cole can record beta
+A buddy can: open the app, see Cole's trail/photos/notes for an area, and. For an area
+preloaded while on wifi. Navigate it at the crag in airplane mode. Cole can record beta
 offline and have it sync when back online. Both are identified users. Pro tier on.
 
 ---
@@ -133,14 +133,14 @@ offline and have it sync when back online. Both are identified users. Pro tier o
 
 - **6/20 for A+B is aggressive.** If time runs short, the fallback priority is: A (online
   sharing) → B1 (offline data sync) → B3 (offline read) → B2 (offline tiles). For an actual
-  crag test, B2 (tiles) matters most for navigation — revisit the tradeoff mid-build.
+  crag test, B2 (tiles) matters most for navigation. Revisit the tradeoff mid-build.
 - **Photo storage/bandwidth** scale with use; move photos to Cloudflare R2 (no egress fees)
   at the turning point if costs bite.
-- **Invite/auth friction** for non-technical buddies — the invite-link UX must be dead
+- **Invite/auth friction** for non-technical buddies: the invite-link UX must be dead
   simple; test it on a real buddy early.
 - **Liability grows** when beta becomes visible to others (safety-critical info). Keep the
   disclaimer; revisit wording before broad sharing.
-- **Supabase anon key is public** by design — RLS is what protects data. Get RLS right.
+- **Supabase anon key is public** by design: RLS is what protects data. Get RLS right.
 - **Free-tier pause** if idle >7 days between build and test weekends (one-click restore).
 
 ---
@@ -155,7 +155,7 @@ offline and have it sync when back online. Both are identified users. Pro tier o
   move can't silently overwrite a good GPS fix.
 - Per-photo captions, user-created routes/walls (unless time allows), comment threading UI
   (the data model leaves room; the UI comes later).
-- Native app-store builds (Capacitor) — PWA install is enough.
+- Native app-store builds (Capacitor): PWA install is enough.
 
 ---
 
@@ -173,18 +173,18 @@ climbs total (CA 36k, CO 30k…), so any broad/national expansion needs a differ
 - **Move route/wall data into Supabase** (Postgres + PostGIS), imported via an adapted
   `fetch-openbeta.mjs` that writes to the DB instead of a JSON file. Routes are read-only
   seed data (distinct from user contributions); RLS = world-readable, no writes.
-- **Load by map viewport** — replace the bundled `getWalls()` in `src/data/routes.js` with a
+- **Load by map viewport**: replace the bundled `getWalls()` in `src/data/routes.js` with a
   spatial query for walls in the current bounds (bbox / PostGIS `ST_Within`), debounced on
   map move. The data layer (rule 2) is the only thing that changes; UI is untouched.
-- **Offline becomes per-area** — "Save area offline" (already built for tiles) also caches
+- **Offline becomes per-area**: "Save area offline" (already built for tiles) also caches
   that area's walls/routes into IndexedDB, instead of bundling the whole dataset. Reuses the
   Stage B cache machinery.
-- **Keep the personal/shared layer (pins/trails/notes/photos) exactly as is** — this only
+- **Keep the personal/shared layer (pins/trails/notes/photos) exactly as is**. This only
   changes how the OpenBeta *base catalog* is stored and fetched.
 
-**Effort:** moderate — mostly `routes.js` + an import script + a per-area cache path. The
+**Effort:** moderate. Mostly `routes.js` + an import script + a per-area cache path. The
 locked data-layer separation is what makes it contained. Cost: route text is small (~tens of
-MB) — fits Supabase Pro. Licensing: OpenBeta route text is CC0 (fine); never their photos.
+MB). Fits Supabase Pro. Licensing: OpenBeta route text is CC0 (fine); never their photos.
 
 ---
 
@@ -198,7 +198,7 @@ read-only seed; routes inherit their wall's coords, so we correct WALLS only.
   `author_id`, `updated_at`. RLS: world-read; any signed-in user may insert/update
   (last-write-wins, attributed). Reset = delete the row.
 - **`src/data/overrides.js`**: `getOverrides()` (cached for offline), `setOverride(wallId,
-  lng, lat)`, `resetOverride(wallId)` — all through the Stage B cache/outbox so corrections
+  lng, lat)`, `resetOverride(wallId)`. All through the Stage B cache/outbox so corrections
   work offline and sync on reconnect.
 - **Merge in the data layer**: `getWallsGeoJSON(filter, overrides)` uses the corrected coord
   when an override exists, else the seed coord. UI unchanged.
@@ -207,31 +207,31 @@ read-only seed; routes inherit their wall's coords, so we correct WALLS only.
 
 ---
 
-## 10. Scaling buildout (scoped 2026-06-17 — pulled forward; Moab→nationwide GTM)
+## 10. Scaling buildout (scoped 2026-06-17: pulled forward; Moab→nationwide GTM)
 
 Cole's go-to-market (show it at Moab; visitors take it home across the US) front-loads
 strangers + out-of-region use, so the scale-turning-point work is brought forward. Build
 order (≈10–15 sessions total at 3–5 hr/wk):
 
-1. **Onboarding (≈1 session)** — mission-led first-run ("Help build the best climbing
-   database — made by climbers, for climbers; log climbs, fix wall locations, add beta"),
+1. **Onboarding (≈1 session)**: mission-led first-run ("Help build the best climbing
+   database. Made by climbers, for climbers; log climbs, fix wall locations, add beta"),
    simple how-to, install steps, reachable later via Help. Optional in-context hints.
-2. **Social / route logging (≈3–4)** — `ticks` table; "Log a climb" on routes (date +
+2. **Social / route logging (≈3–4)**: `ticks` table; "Log a climb" on routes (date +
    style + note); a **tick count** per route; personal logbook; activity feed of recent
    public logs. Kudos/comments later. Reuses data-layer/offline/attribution patterns.
-3. **Access control (≈1–2)** — `role` on profiles (viewer/contributor/admin); RLS keys
+3. **Access control (≈1–2)**: `role` on profiles (viewer/contributor/admin); RLS keys
    *writes* off role so new sign-ups can't immediately edit shared data. The cheap,
-   proactive moderation lever — ship before strangers arrive.
-4. **Nationwide routes + robust offline (≈3–5)** — routes move to Supabase (PostGIS),
+   proactive moderation lever. Ship before strangers arrive.
+4. **Nationwide routes + robust offline (≈3–5)**: routes move to Supabase (PostGIS),
    loaded by viewport (clusters at low zoom). "Save area" downloads routes + tiles +
    (for the public phase) photos, with storage checks, progress, and a Manage-downloads
    list. The reliable-offline-download work Cole flagged.
-5. **Admin dashboard (≈2–3)** — admin-only page: signups, recent contributions (what/who/
+5. **Admin dashboard (≈2–3)**: admin-only page: signups, recent contributions (what/who/
    when) with revert, ban/suspend. Soft-delete + audit so nothing's lost. Full pre-approval
    queue deferred (design schema with a `status` column now, build later if volume demands).
 
 **Key moderation principle (resolves the participation-vs-gatekeeping tension):** split
 contributions by risk. LOW-risk (ticks, your own pins/notes/photos) = open to any signed-in
-user. HIGH-risk (editing shared data others rely on — esp. location overrides, later
+user. HIGH-risk (editing shared data others rely on, esp. location overrides, later
 user-edited routes) = gated to contributors and/or trivially revertable + audited. Don't
-pre-approve everything — it would strangle the contribution flywheel that's the whole point.
+pre-approve everything. It would strangle the contribution flywheel that's the whole point.

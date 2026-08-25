@@ -1,10 +1,10 @@
-// Analytics — a deliberately tiny, cookieless layer. We track ONLY the handful of
+// Analytics, a deliberately tiny, cookieless layer. We track ONLY the handful of
 // events that map to the growth plan's evidence gates (docs/growth-architecture-
 // plan.md §8/§11c): sign_up, area_downloaded, contribution_created, share.
 // Pageviews/weekly-active come free from the Umami script. No PII, no event soup.
 //
 // track() is a safe no-op until the Umami script is loaded (its instance lives
-// wherever we host it — a tomorrow blocker). Wiring the call sites now means we
+// wherever we host it, a tomorrow blocker). Wiring the call sites now means we
 // just drop in the script + website id to switch analytics on.
 
 // The only events we send. Keeping them in one list stops the taxonomy sprawling.

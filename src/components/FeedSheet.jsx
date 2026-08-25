@@ -62,7 +62,7 @@ export default function FeedSheet({ initialMode = 'all', onPick, onClose }) {
       ) : ticks.length === 0 ? (
         <p className="detail-desc muted">
           {mode === 'mine'
-            ? "You haven't logged any climbs yet — open a route and tap “I climbed this.”"
+            ? "You haven't logged any climbs yet. Open a route and tap “I climbed this.”"
             : 'No ascents logged yet. Be the first!'}
         </p>
       ) : (

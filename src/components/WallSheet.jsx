@@ -115,7 +115,7 @@ export default function WallSheet({
 
         {/* Ownership, not a deficiency notice: an empty crag is a chance to be
             first, and the invitation stays put once it's filled in. Shown only
-            here, in context — the app never goes hunting for people to nag. */}
+            here, in context, the app never goes hunting for people to nag. */}
         {access.length === 0 && tracks.length === 0 && (
           <p className="access-invite">
             Know how to get to {wall.name}? You'd be the first to put it on the map.
@@ -136,7 +136,7 @@ export default function WallSheet({
           <li key={r.id}>
             <button className="route-row" onClick={() => onSelectRoute(r)}>
               <span className="route-name">{r.name}</span>
-              <span className="route-grade">{r.grade || '—'}</span>
+              <span className="route-grade">{r.grade || '-'}</span>
               <span className="route-type">{TYPE_LABELS[r.type] || r.type}</span>
               <span className="route-chevron">›</span>
             </button>

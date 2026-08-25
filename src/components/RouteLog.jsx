@@ -49,7 +49,7 @@ export default function RouteLog({ route, wallId }) {
     <section className="detail-section">
       <h3>Ascents</h3>
       {ticks.length === 0 ? (
-        <p className="tick-count">No logged ascents yet — be the first.</p>
+        <p className="tick-count">No logged ascents yet. Be the first.</p>
       ) : (
         <button
           className="tick-count tick-count-toggle"
@@ -94,7 +94,7 @@ export default function RouteLog({ route, wallId }) {
           <textarea
             className="pin-textarea"
             rows={2}
-            placeholder="Optional note — conditions, beta, how it felt…"
+            placeholder="Optional note: conditions, beta, how it felt…"
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />

@@ -1,9 +1,9 @@
-// The data layer. UI components call ONLY these functions — never the seed
+// The data layer. UI components call ONLY these functions. Never the seed
 // JSON, the OpenBeta API, or storage directly. When local storage is later
 // replaced by a backend (CLAUDE.md section 4, rule 2), only this file changes.
 
 // The route seed is loaded LAZILY (dynamic import) so the ~2.7MB JSON isn't
-// baked into the main JS bundle — the app shell loads fast, then the route data
+// baked into the main JS bundle, the app shell loads fast, then the route data
 // streams in as a separate chunk. initSeed() must resolve before the sync
 // getters below return data; App awaits it during map load.
 let seed = null
@@ -66,7 +66,7 @@ export function routeRef(routeId) {
 
 // --- Filtering ------------------------------------------------------------
 //
-// Two grade scales coexist: YDS (roped — sport/trad/toprope) and V (boulder).
+// Two grade scales coexist: YDS (roped, sport/trad/toprope) and V (boulder).
 // ~75% of routes are boulders, so we filter each scale independently and gate
 // everything by route type.
 
@@ -141,7 +141,7 @@ export function getFilteredWalls(filter) {
 
 /**
  * Filtered walls as a GeoJSON FeatureCollection for MapLibre. Each feature is
- * one wall; the matching route list rides along in properties (stringified —
+ * one wall; the matching route list rides along in properties (stringified,
  * GeoJSON props must be primitives) so a click handler needs no lookup.
  */
 export function getWallsGeoJSON(filter, overrides = {}) {
@@ -176,7 +176,7 @@ export function searchWallsAndRoutes(query, limit = 25) {
   const q = query.trim().toLowerCase()
   if (q.length < 2) return []
   // Rank matches: name starts with the query (0) beats a word starting with it
-  // (1) beats a mid-word substring (2) — so "Otto" surfaces "Otto's ..." before
+  // (1) beats a mid-word substring (2), so "Otto" surfaces "Otto's ..." before
   // "Big Bottom Lip". Ties break toward shorter names (tighter match).
   const scoreOf = (name) => {
     const n = name.toLowerCase()

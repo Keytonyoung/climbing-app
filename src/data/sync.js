@@ -65,7 +65,7 @@ export async function outboxCount() {
   return db.count('outbox')
 }
 
-// A write that keeps failing is "poison" — after this many attempts we set it
+// A write that keeps failing is "poison". After this many attempts we set it
 // aside so it can't wedge every later write behind it forever.
 export const MAX_ATTEMPTS = 5
 
@@ -90,7 +90,7 @@ export async function flush() {
   if (!isOnline() || !supabase) return 0
   // We've likely been offline for hours, so the access token is probably stale.
   // Give Supabase a chance to refresh it BEFORE we spend outbox attempts on
-  // auth failures — otherwise a crag day's beta can burn its retries and get
+  // auth failures. Otherwise a crag day's beta can burn its retries and get
   // quarantined at the trailhead, which would silently lose it.
   try {
     await supabase.auth.getSession()
@@ -111,11 +111,11 @@ export async function flush() {
       const { action, record } = nextOutboxState(item, e.message)
       await db.put('outbox', record)
       if (action === 'quarantine') {
-        // Set aside and keep going — don't let one bad op block the queue.
+        // Set aside and keep going. Don't let one bad op block the queue.
         console.warn(`flush: quarantined ${item.table}/${item.op}:`, e.message)
         continue
       }
-      // Likely transient (offline / token refresh) — stop so order is preserved.
+      // Likely transient (offline / token refresh). Stop so order is preserved.
       console.warn('flush paused:', e.message)
       break
     }

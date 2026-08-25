@@ -39,7 +39,7 @@ html, body, #root {
   margin-right: 4px;
 }
 
-/* Header search — styled as a real search field so it reads as "type here to
+/* Header search. Styled as a real search field so it reads as "type here to
    find a crag/route" instead of a mystery icon. Tapping opens the search sheet. */
 .search-pill {
   flex: 1;
@@ -96,7 +96,7 @@ html, body, #root {
   color: #fff;
 }
 
-/* Bottom action bar — primary actions in the thumb zone (phone-first). */
+/* Bottom action bar. Primary actions in the thumb zone (phone-first). */
 #action-bar {
   position: absolute;
   left: 0;
@@ -191,7 +191,7 @@ html, body, #root {
   margin-left: auto;
 }
 
-/* "Getting there" — access pins + approach trails on the wall sheet */
+/* "Getting there". Access pins + approach trails on the wall sheet */
 .wall-access {
   margin: 12px 0 4px;
 }
@@ -499,7 +499,7 @@ html, body, #root {
 }
 
 /* Keep a file input interactive (so a wrapping <label> opens the picker on
-   mobile) while hiding it visually — do NOT use display:none, which iOS
+   mobile) while hiding it visually. Do NOT use display:none, which iOS
    Safari treats as non-interactive. */
 .visually-hidden {
   position: absolute;
@@ -550,7 +550,7 @@ html, body, #root {
 }
 
 /* Filter panel */
-/* Filter / add-pin / track panels — anchored just above the bottom action bar
+/* Filter / add-pin / track panels. Anchored just above the bottom action bar
    so they appear next to the buttons that open them (phone-first). */
 /* Inner layout for the Filter / Add-pin / Trail sheets (positioning, handle,
    and swipe now come from the shared .sheet wrapper). */
@@ -1351,7 +1351,7 @@ label svg,
   vertical-align: 0;
 }
 
-/* Touch feedback — controls respond to the finger. Cheap-feeling UIs don't. */
+/* Touch feedback. Controls respond to the finger. Cheap-feeling UIs don't. */
 button {
   transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
     transform 0.06s ease;
@@ -1512,7 +1512,7 @@ select:focus-visible {
   cursor: pointer;
 }
 
-/* Contribution invitation on the wall sheet — an opportunity, not a complaint */
+/* Contribution invitation on the wall sheet, an opportunity, not a complaint */
 .access-invite {
   margin: 2px 0 10px;
   padding: 10px 12px;

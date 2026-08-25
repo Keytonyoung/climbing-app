@@ -1,6 +1,6 @@
 // Read-only admin feed: the most recent contributions across all shared tables
 // (notes, photos, ticks, pins, tracks, wall location overrides). This is the
-// "tracked" half of moderation — Cole can see what everyone is adding/changing.
+// "tracked" half of moderation. Cole can see what everyone is adding/changing.
 // The "undoable" half (soft-delete + revert) needs a migration and lands later.
 //
 // Gated in the UI to VITE_ADMIN_USER_ID; this module just reads. UI goes through
@@ -47,7 +47,7 @@ const SOURCES = [
     table: 'pins',
     kind: 'pin',
     pk: 'id',
-    map: (r) => ({ summary: `Pin: ${r.category}${r.label ? ` — ${r.label}` : ''}` }),
+    map: (r) => ({ summary: `Pin: ${r.category}${r.label ? `, ${r.label}` : ''}` }),
   },
   {
     table: 'tracks',
@@ -107,7 +107,7 @@ export async function getRecentContributions({ limit = 60 } = {}) {
 
 /**
  * Admin moderation: soft-delete a contribution (deleted=true) or restore it
- * (deleted=false). Server-side RLS enforces that only the admin can do this —
+ * (deleted=false). Server-side RLS enforces that only the admin can do this,
  * this just stamps/clears deleted_at; nothing is hard-deleted.
  */
 export async function setContributionDeleted(kind, rawId, deleted) {

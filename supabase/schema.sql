@@ -1,11 +1,11 @@
--- Western Slope Climbing — Supabase schema for multi-user v1.
+-- Western Slope Climbing. Supabase schema for multi-user v1.
 -- Paste this into the Supabase SQL Editor (see docs/stage-A1-setup.md) to build
 -- every table and security rule in one shot. Safe to re-run (idempotent-ish).
 --
 -- Access model (CLAUDE.md amendment 2026-06-13): anyone may READ; only signed-in
 -- users may WRITE; users may edit/delete only their OWN rows. No moderation yet.
 -- IDs are generated on the device (crypto.randomUUID) so offline-created rows
--- keep their id when they sync — that's why ids are plain uuid, not defaulted.
+-- keep their id when they sync. That's why ids are plain uuid, not defaulted.
 
 -- =========================================================================
 -- profiles: one row per signed-in user, for attribution ("who left this").
@@ -139,7 +139,7 @@ end $$;
 -- wall_overrides: corrected coordinates for OpenBeta walls (the seed data is
 -- read-only, so fixes live here, overlaid at render time). One row per wall;
 -- any signed-in user may set/replace it (last-write-wins, attributed). Reset =
--- delete the row. (Hardening — consensus/locking — is a turning-point task.)
+-- delete the row. (Hardening, consensus/locking, is a turning-point task.)
 -- =========================================================================
 create table if not exists public.wall_overrides (
   wall_id    text primary key,         -- OpenBeta wall uuid
@@ -162,7 +162,7 @@ create policy "wall_overrides delete" on public.wall_overrides for delete
 -- =========================================================================
 -- ticks: a logged ascent ("I climbed this"). Drives the tick count per route
 -- and the future activity feed. Public by default; private ticks visible only
--- to their author. LOW-risk contribution — any signed-in user may log.
+-- to their author. LOW-risk contribution. Any signed-in user may log.
 -- =========================================================================
 create table if not exists public.ticks (
   id         uuid primary key,

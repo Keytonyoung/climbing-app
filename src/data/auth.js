@@ -2,13 +2,13 @@
 // AuthContext, not this directly). Passwordless magic-link sign-in: tap a link
 // in the email and the app picks up the session on return.
 //
-// (We'd prefer in-app one-time codes — better for installed PWAs — but Supabase
+// (We'd prefer in-app one-time codes, better for installed PWAs, but Supabase
 // now requires custom SMTP to edit the email template that would show the code.
 // Magic link works with the default email; revisit codes once SMTP is set up.)
 
 import { supabase, isSupabaseConfigured } from './supabase'
 
-// Where the magic link returns to — current origin + Vite base path. Works in
+// Where the magic link returns to. Current origin + Vite base path. Works in
 // both dev (localhost) and prod (GitHub Pages subpath). Must be allowlisted in
 // Supabase: Authentication → URL Configuration → Redirect URLs.
 function redirectTo() {
@@ -38,7 +38,7 @@ export function displayName(user) {
 //
 // Do NOT gate this on navigator.onLine. That flag reports whether a network
 // INTERFACE exists, not whether the internet works. At a crag with one bar (or
-// "SOS") it reads TRUE while every request times out — so a token refresh
+// "SOS") it reads TRUE while every request times out, so a token refresh
 // fails, Supabase fires SIGNED_OUT, and an onLine-based guard never trips. That
 // logged Cole out mid-session AND wiped the cache, so even switching to
 // airplane mode couldn't recover it. Real bug, found at a real crag.
@@ -75,7 +75,7 @@ export function getCachedUser() {
 
 /**
  * Read the live session without ever hanging or throwing. With no usable
- * network, getSession() may attempt a token refresh that stalls or rejects —
+ * network, getSession() may attempt a token refresh that stalls or rejects,
  * an unhandled rejection here used to leave the app stuck with no user at all.
  */
 async function liveSession(timeoutMs = 4000) {
@@ -117,7 +117,7 @@ export function onAuthChange(cb) {
       return
     }
     // A null user only counts when WE asked to sign out. Anything else is a
-    // failed refresh on a dead connection — never evict the identity for that.
+    // failed refresh on a dead connection. Never evict the identity for that.
     if (signingOut) {
       cacheUser(null)
       cb(null)
@@ -136,7 +136,7 @@ export async function sendMagicLink(email) {
   if (error) throw error
 }
 
-/** Explicit, user-initiated sign-out — the only path that clears the identity. */
+/** Explicit, user-initiated sign-out, the only path that clears the identity. */
 export async function signOut() {
   signingOut = true
   cacheUser(null)
@@ -165,7 +165,7 @@ export async function getMarketingOptIn() {
 }
 
 /** Set the current user's marketing-email opt-in (consented, separate from the
- *  transactional auth email — see growth plan §11e). */
+ *  transactional auth email. See growth plan §11e). */
 export async function setMarketingOptIn(optIn) {
   if (!isSupabaseConfigured) throw new Error('Backend not configured')
   const user = await getCurrentUser()

@@ -1,9 +1,9 @@
-// Supabase client — the shared-backend connection for multi-user v1.
+// Supabase client, the shared-backend connection for multi-user v1.
 // Part of the data layer (CLAUDE.md rule 2): feature modules (pins, tracks,
 // notes) will import this; UI never does.
 //
 // Reads config from Vite env vars (see .env.example). The anon key is meant to
-// be public — Row-Level Security in supabase/schema.sql is what protects data.
+// be public. Row-Level Security in supabase/schema.sql is what protects data.
 //
 // NOTE: not yet wired into the running app. Until .env.local is filled in and
 // the data modules are migrated (Stage A3), `isSupabaseConfigured` is false and
