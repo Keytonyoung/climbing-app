@@ -90,6 +90,18 @@ Draft A to Western Slope climbing communities, then let evidence drive the backl
 - **Verification discipline before every deploy**: `npm run lint` (0 warnings),
   `npm test` (31 passing), `npm run build` (guard green). Add a test when touching
   data-layer logic — the suite exists because three offline bugs shipped un-caught.
+- **NEVER gate anything important on `navigator.onLine`.** It reports that a
+  network *interface* exists, not that the internet works. At a crag on one bar
+  or "SOS" it reads `true` while every request times out. This shipped a
+  catastrophic bug twice (auth sign-out at a crag, commit 652fae6) — the fix was
+  to make the cached identity authoritative and only clear it on an explicit
+  `signOut()`. Reads/writes may use `isOnline()` for *routing* (every caller
+  falls back to cache on failure), but never for deciding identity or truth.
+- **Any "when the network is bad" fix must be reproduced, not reasoned about.**
+  The faithful repro that caught this: plant an expired supabase session in
+  localStorage, override `window.fetch` to reject after a delay, force
+  `navigator.onLine` true, then cold-boot the app and exercise the real write
+  path (`logTick`). Unit tests alone missed it the first time.
 - **The repo lives in OneDrive** — occasional file-lock weirdness; retries work.
 - **Supabase**: project keys in `.env.local` (gitignored, never commit). Free tier
   until traction (Cole's call — do not push Pro). Redirect URLs must list
