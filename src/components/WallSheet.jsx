@@ -24,6 +24,7 @@ export default function WallSheet({
   access = [],
   canEdit,
   onOpenPin,
+  onAddAccess,
   onOpenTrack,
   onSelectRoute,
   onFixLocation,
@@ -78,38 +79,52 @@ export default function WallSheet({
         )}
       </div>
 
-      {(access.length > 0 || tracks.length > 0) && (
-        <div className="wall-access">
-          <h3 className="wall-access-title">Getting there</h3>
-          {access.map(({ pin, distance, linked }) => (
-            <button key={pin.id} className="wall-access-row" onClick={() => onOpenPin(pin)}>
-              <span className="access-badge" style={{ background: categoryColor(pin.category) }}>
-                <Icon name="pin" size={13} strokeWidth={2.4} />
+      <div className="wall-access">
+        <h3 className="wall-access-title">Getting there</h3>
+        {access.map(({ pin, distance, linked }) => (
+          <button key={pin.id} className="wall-access-row" onClick={() => onOpenPin(pin)}>
+            <span className="access-badge" style={{ background: categoryColor(pin.category) }}>
+              <Icon name="pin" size={13} strokeWidth={2.4} />
+            </span>
+            <span className="access-text">
+              <span className="access-label">{pin.label || categoryLabel(pin.category)}</span>
+              <span className="access-sub">
+                {categoryLabel(pin.category)} · {formatDistance(distance)}
+                {linked ? ' · on approach' : ''}
+                {/* Credit by name: people look after what they're known for. */}
+                {pin.authorName ? ` · ${pin.authorName}` : ''}
               </span>
-              <span className="access-text">
-                <span className="access-label">{pin.label || categoryLabel(pin.category)}</span>
-                <span className="access-sub">
-                  {categoryLabel(pin.category)} · {formatDistance(distance)}
-                  {linked ? ' · on approach' : ''}
-                </span>
+            </span>
+            <span className="route-chevron">›</span>
+          </button>
+        ))}
+        {tracks.map((t) => (
+          <button key={t.id} className="wall-access-row" onClick={() => onOpenTrack(t)}>
+            <span className="access-badge" style={{ background: 'var(--sky-teal)' }}>
+              <Icon name="trail" size={13} strokeWidth={2.4} />
+            </span>
+            <span className="access-text">
+              <span className="access-label">{t.name || 'Approach trail'}</span>
+              <span className="access-sub">
+                Recorded approach{t.authorName ? ` · ${t.authorName}` : ''}
               </span>
-              <span className="route-chevron">›</span>
-            </button>
-          ))}
-          {tracks.map((t) => (
-            <button key={t.id} className="wall-access-row" onClick={() => onOpenTrack(t)}>
-              <span className="access-badge" style={{ background: 'var(--sky-teal)' }}>
-                <Icon name="trail" size={13} strokeWidth={2.4} />
-              </span>
-              <span className="access-text">
-                <span className="access-label">{t.name || 'Approach trail'}</span>
-                <span className="access-sub">Recorded approach trail</span>
-              </span>
-              <span className="route-chevron">›</span>
-            </button>
-          ))}
-        </div>
-      )}
+            </span>
+            <span className="route-chevron">›</span>
+          </button>
+        ))}
+
+        {/* Ownership, not a deficiency notice: an empty crag is a chance to be
+            first, and the invitation stays put once it's filled in. Shown only
+            here, in context — the app never goes hunting for people to nag. */}
+        {access.length === 0 && tracks.length === 0 && (
+          <p className="access-invite">
+            Know how to get to {wall.name}? You'd be the first to put it on the map.
+          </p>
+        )}
+        <button className="access-add" onClick={() => onAddAccess(wall)}>
+          <Icon name="plus" size={15} /> Add parking or a trailhead
+        </button>
+      </div>
 
       <NotesPhotos kind="wall" id={wall.id} />
 

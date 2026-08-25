@@ -860,6 +860,28 @@ export default function App() {
     setGeoError(null)
     closeSheets()
   }
+  /**
+   * Start adding access beta for a specific wall, from that wall's sheet.
+   * Contributing what you know should be one tap — not close-the-sheet, find
+   * the Pin button, then hunt the map for the right spot. Flies to the wall
+   * first so the placement is already in the right neighbourhood.
+   */
+  const addAccessForWall = (wall) => {
+    if (!user) {
+      setShowAuth(true)
+      return
+    }
+    closeSheets()
+    setShowFilter(false)
+    setShowTrack(false)
+    setGeoError(null)
+    map.current?.flyTo({
+      center: [wall.lng, wall.lat],
+      zoom: Math.max(map.current.getZoom(), 15),
+    })
+    setAdding(true)
+  }
+
   const toggleTrack = () => {
     if (recording) return // don't hide an active recording
     // Recording a trail writes to the shared backend — require sign-in first.
@@ -1186,6 +1208,7 @@ export default function App() {
           access={wallAccess}
           canEdit={!!user}
           onOpenPin={openAccessPin}
+          onAddAccess={addAccessForWall}
           onOpenTrack={openWallTrack}
           onSelectRoute={setSelectedRoute}
           onFixLocation={startFixLocation}

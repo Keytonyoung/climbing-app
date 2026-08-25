@@ -15,10 +15,12 @@ export default function WelcomeOverlay({ onDismiss, onInstall }) {
         <p className="welcome-tagline">Find the wall, climb offline.</p>
 
         <div className="welcome-mission">
-          Cragward gets you <em>to</em> the wall — parking, the approach trail, and local
-          beta — and keeps working when your signal doesn't. We're building it together,
-          crag by crag: your pins, trails, notes, and photos make it better for the next
-          climber.
+          <strong>Built by climbers, for the people who actually go there.</strong>{' '}
+          Independent, and put together by the locals who know these crags — not a
+          product from some outdoor conglomerate. Cragward gets you <em>to</em> the
+          wall — parking, the approach, the stuff that never made the guidebook — and
+          keeps working when your signal doesn't. Every crag in here is better because
+          someone added what they knew. Add yours.
         </div>
 
         <ul className="welcome-tips">
