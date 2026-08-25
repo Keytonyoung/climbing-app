@@ -88,6 +88,15 @@ export function nextOutboxState(item, errorMessage) {
  *  skipped) so it can't block the rest of the queue indefinitely. */
 export async function flush() {
   if (!isOnline() || !supabase) return 0
+  // We've likely been offline for hours, so the access token is probably stale.
+  // Give Supabase a chance to refresh it BEFORE we spend outbox attempts on
+  // auth failures — otherwise a crag day's beta can burn its retries and get
+  // quarantined at the trailhead, which would silently lose it.
+  try {
+    await supabase.auth.getSession()
+  } catch {
+    /* still no usable network; the ops below will retry next flush */
+  }
   const db = await getDB()
   const items = (await db.getAll('outbox'))
     .filter((it) => !it.failed)

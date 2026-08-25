@@ -31,11 +31,25 @@ export function displayName(user) {
   return user.user_metadata?.display_name || user.email?.split('@')[0] || 'Climber'
 }
 
-// Last-known user, persisted locally so the app stays "signed in" with no
-// signal. Without this, a background token refresh that fails offline fires a
-// spurious SIGNED_OUT and hides every edit control at the crag — the writes
-// themselves queue in the outbox and don't need a live token.
+// --- Offline-durable identity --------------------------------------------
+//
+// THE RULE: the cached identity is authoritative, and ONLY an explicit
+// signOut() may clear it.
+//
+// Do NOT gate this on navigator.onLine. That flag reports whether a network
+// INTERFACE exists, not whether the internet works. At a crag with one bar (or
+// "SOS") it reads TRUE while every request times out — so a token refresh
+// fails, Supabase fires SIGNED_OUT, and an onLine-based guard never trips. That
+// logged Cole out mid-session AND wiped the cache, so even switching to
+// airplane mode couldn't recover it. Real bug, found at a real crag.
+//
+// Deliberate tradeoff: a stale session lingering is a minor annoyance with an
+// obvious fix (Sign out → sign in again). A false sign-out at a crag destroys
+// the entire point of the app. Identity favors the climber.
 const USER_CACHE_KEY = 'cachedUser'
+
+// Set only by signOut(); the one thing allowed to evict the cached identity.
+let signingOut = false
 
 export function cacheUser(user) {
   try {
@@ -59,26 +73,56 @@ export function getCachedUser() {
   }
 }
 
-/** Current signed-in user (or null). Falls back to the cached identity when
- *  offline so author stamping and the UI keep working with no signal. */
+/**
+ * Read the live session without ever hanging or throwing. With no usable
+ * network, getSession() may attempt a token refresh that stalls or rejects —
+ * an unhandled rejection here used to leave the app stuck with no user at all.
+ */
+async function liveSession(timeoutMs = 4000) {
+  try {
+    const result = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+    ])
+    return result?.data?.session ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Current signed-in user (or null). Falls back to the cached identity whenever
+ *  there's no live session, so author stamping and every edit control keep
+ *  working with no signal (see THE RULE above). */
 export async function getCurrentUser() {
   if (!isSupabaseConfigured) return null
-  const { data } = await supabase.auth.getSession()
-  const user = data.session?.user ?? null
+  const user = (await liveSession())?.user ?? null
   if (user) {
     cacheUser(user)
     return user
   }
-  if (typeof navigator !== 'undefined' && !navigator.onLine) return getCachedUser()
-  return null
+  // No live session. We cannot distinguish "genuinely signed out" from "the
+  // network is lying to us", so we keep the climber signed in.
+  return getCachedUser()
 }
 
 /** Subscribe to sign-in/out. Returns an unsubscribe fn. */
 export function onAuthChange(cb) {
   if (!isSupabaseConfigured) return () => {}
-  const { data } = supabase.auth.onAuthStateChange((_event, session) =>
-    cb(session?.user ?? null)
-  )
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const user = session?.user ?? null
+    if (user) {
+      signingOut = false
+      cacheUser(user)
+      cb(user)
+      return
+    }
+    // A null user only counts when WE asked to sign out. Anything else is a
+    // failed refresh on a dead connection — never evict the identity for that.
+    if (signingOut) {
+      cacheUser(null)
+      cb(null)
+    }
+  })
   return () => data.subscription.unsubscribe()
 }
 
@@ -92,7 +136,9 @@ export async function sendMagicLink(email) {
   if (error) throw error
 }
 
+/** Explicit, user-initiated sign-out — the only path that clears the identity. */
 export async function signOut() {
+  signingOut = true
   cacheUser(null)
   if (isSupabaseConfigured) await supabase.auth.signOut()
 }
