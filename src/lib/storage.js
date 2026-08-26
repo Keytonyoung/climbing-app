@@ -17,22 +17,3 @@ export async function ensurePersistentStorage() {
   }
 }
 
-/** Whether storage is already persistent (no prompt). */
-export async function isStoragePersisted() {
-  try {
-    return !!navigator.storage?.persisted && (await navigator.storage.persisted())
-  } catch {
-    return false
-  }
-}
-
-/** Rough usage/quota, for surfacing how much is stored offline. */
-export async function storageEstimate() {
-  try {
-    if (!navigator.storage?.estimate) return null
-    const { usage = 0, quota = 0 } = await navigator.storage.estimate()
-    return { usage, quota }
-  } catch {
-    return null
-  }
-}

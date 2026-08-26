@@ -222,14 +222,26 @@ export async function addPhoto(kind, id, blob) {
     target_id: id,
     storage_path: path,
   })
-  if (insErr) throw insErr
+  if (insErr) {
+    // The upload already succeeded, so without this the file would sit in the
+    // bucket forever with no row pointing at it: invisible in the app, and
+    // impossible to clean up through it. Realistic whenever the row is
+    // rejected (rate limit, RLS) after the bytes are through.
+    await supabase.storage.from(BUCKET).remove([path]).catch(() => {})
+    throw insErr
+  }
 }
 
-/** Delete one of your own photos: remove the file then the row (RLS-scoped). */
+/** Delete one of your own photos: the row first, then the file (RLS-scoped). */
 export async function deletePhoto(photoId) {
-  const { data } = await supabase.from('photos').select('storage_path').eq('id', photoId).single()
-  if (data?.storage_path) await supabase.storage.from(BUCKET).remove([data.storage_path])
+  const { data } = await supabase.from('photos').select('storage_path').eq('id', photoId).maybeSingle()
+  // Row first. It is the permission-checked half, so if it fails nothing has
+  // been destroyed. Deleting the file first meant a rejected row delete left a
+  // permanently broken image behind.
   const { error } = await supabase.from('photos').delete().eq('id', photoId)
   if (error) throw error
+  if (data?.storage_path) {
+    await supabase.storage.from(BUCKET).remove([data.storage_path]).catch(() => {})
+  }
   await cacheDelete('photos', photoId)
 }

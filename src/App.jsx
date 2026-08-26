@@ -33,7 +33,7 @@ import {
 } from './data/tracks'
 import { useAuth } from './auth/AuthContext'
 import { displayName } from './data/auth'
-import { initSync } from './data/sync'
+import { initSync, failedOps } from './data/sync'
 import { getOverrides, setOverride, resetOverride } from './data/overrides'
 import { prefetchBeta } from './data/notes'
 import { canDownloadArea } from './data/entitlements'
@@ -436,7 +436,17 @@ export default function App() {
       setPins(await getPins())
       setTracks(await getTracks())
       setOverrides(await getOverrides())
+      await warnAboutFailedWrites()
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // A queued write that fails repeatedly gets quarantined so it cannot block
+  // the rest of the queue. That was invisible: a crag day's beta could be
+  // dropped with nothing to show for it. Say so instead of losing it quietly.
+  useEffect(() => {
+    warnAboutFailedWrites()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Load the saved-areas registry and check offline health once at startup: if
@@ -985,6 +995,17 @@ export default function App() {
   function showToast(msg) {
     setToast(msg)
     setTimeout(() => setToast((t) => (t === msg ? null : t)), 3000)
+  }
+
+  /** Tell the user when queued beta was set aside after repeated failures,
+   *  rather than letting it disappear without a word. */
+  async function warnAboutFailedWrites() {
+    const failed = await failedOps()
+    if (!failed.length) return
+    const n = failed.length
+    showToast(
+      `${n} offline ${n === 1 ? 'change' : 'changes'} could not be saved to the server. Try adding ${n === 1 ? 'it' : 'them'} again.`
+    )
   }
 
   function closeSheets() {

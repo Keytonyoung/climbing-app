@@ -60,11 +60,6 @@ export async function enqueue({ table, op, payload }) {
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {})
 }
 
-export async function outboxCount() {
-  const db = await getDB()
-  return db.count('outbox')
-}
-
 // A write that keeps failing is "poison". After this many attempts we set it
 // aside so it can't wedge every later write behind it forever.
 export const MAX_ATTEMPTS = 5

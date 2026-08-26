@@ -1,6 +1,24 @@
--- Western Slope Climbing. Supabase schema for multi-user v1.
--- Paste this into the Supabase SQL Editor (see docs/stage-A1-setup.md) to build
--- every table and security rule in one shot. Safe to re-run (idempotent-ish).
+-- Cragward. Supabase schema, v1 BASELINE ONLY.
+--
+-- ############################################################################
+-- # THIS FILE ALONE DOES NOT PRODUCE THE CURRENT DATABASE.                   #
+-- #                                                                          #
+-- # It is the original v1 baseline. To rebuild from scratch, run this file    #
+-- # and then EVERY file in supabase/migrations/ in filename (date) order:     #
+-- #                                                                          #
+-- #   2026-06-18-soft-delete.sql        soft delete + admin role             #
+-- #   2026-06-30-stage1-community.sql   trust tier, marketing opt-in, reports #
+-- #   2026-07-02-pin-sensitivity.sql    pins.sensitive                       #
+-- #   2026-07-03-rate-limit.sql         contribution rate limiting           #
+-- #   2026-07-08-security-hardening.sql privilege escalation + limits        #
+-- #                                                                          #
+-- # Skipping them silently drops real protections: without the last file, any #
+-- # signed-in user can make themselves an admin. The baseline is deliberately #
+-- # NOT kept in sync with the migrations, because two sources of truth is how #
+-- # the drift started. Migrations are the source of truth.                    #
+-- ############################################################################
+--
+-- Safe to re-run (idempotent-ish).
 --
 -- Access model (CLAUDE.md amendment 2026-06-13): anyone may READ; only signed-in
 -- users may WRITE; users may edit/delete only their OWN rows. No moderation yet.

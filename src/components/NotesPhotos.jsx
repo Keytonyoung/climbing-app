@@ -141,6 +141,7 @@ export default function NotesPhotos({ kind, id }) {
         <div className="note-compose">
           <textarea
             className="pin-textarea"
+            maxLength={5000}
             value={draft}
             placeholder="Add beta: sequence, gear, conditions, where to find it…"
             rows={2}
@@ -218,6 +219,7 @@ export default function NotesPhotos({ kind, id }) {
                 <input
                   className="pin-input"
                   type="text"
+                  maxLength={300}
                   placeholder="Add a caption…"
                   value={captionDraft}
                   onChange={(e) => setCaptionDraft(e.target.value)}

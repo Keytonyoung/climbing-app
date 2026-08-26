@@ -75,30 +75,6 @@ export async function addTrack({ name, notes, start, end, coordinates }) {
   return rowToTrack({ ...row, author_name: displayName(user) })
 }
 
-/** Persist edits to a trail (only your own, per RLS). Returns the updated track. */
-export async function updateTrack(track) {
-  const existing = (await cacheGetAll('tracks')).find((r) => r.id === track.id) || {}
-  const changes = {
-    name: track.name,
-    notes: track.notes,
-    start_anchor: track.start,
-    end_anchor: track.end,
-    coordinates: track.coordinates,
-    length_m: track.lengthMeters ?? trackLength(track.coordinates),
-    updated_at: new Date().toISOString(),
-  }
-  const row = { ...existing, ...changes, id: track.id }
-  await cachePut('tracks', row)
-  if (isOnline() && supabase) {
-    const { error } = await supabase.from('tracks').update(changes).eq('id', track.id)
-    if (error) await enqueue({ table: 'tracks', op: 'update', payload: { id: track.id, changes } })
-  } else {
-    await enqueue({ table: 'tracks', op: 'update', payload: { id: track.id, changes } })
-  }
-  return rowToTrack(row)
-}
-
-/** Delete a trail by id (only your own, per RLS). */
 export async function deleteTrack(id) {
   await cacheDelete('tracks', id)
   if (isOnline() && supabase) {

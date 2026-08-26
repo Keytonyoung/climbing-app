@@ -169,28 +169,6 @@ html, body, #root {
   opacity: 0.7;
 }
 
-/* Approach-trail rows in the wall sheet */
-.wall-tracks {
-  margin: 8px 0 4px;
-}
-.wall-track-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-accent);
-  border-radius: 8px;
-  background: #eaf4f2;
-  color: var(--color-accent);
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-}
-.wall-track-row .route-chevron {
-  margin-left: auto;
-}
-
 /* "Getting there". Access pins + approach trails on the wall sheet */
 .wall-access {
   margin: 12px 0 4px;
@@ -342,9 +320,6 @@ html, body, #root {
   color: var(--color-text-muted);
   line-height: 1.4;
 }
-.auth-who {
-  font-size: 16px;
-}
 .auth-footer {
   display: flex;
   justify-content: space-between;
@@ -445,17 +420,6 @@ html, body, #root {
   margin-top: 16px;
 }
 
-.notes-saverow {
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-  margin-top: 6px;
-}
-.notes-saved {
-  font-size: 12px;
-  color: #4a7c4e;
-  font-weight: 600;
-}
 .photo-grid {
   display: flex;
   flex-wrap: wrap;

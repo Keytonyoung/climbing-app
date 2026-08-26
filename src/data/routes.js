@@ -17,18 +17,6 @@ function walls() {
   return seed ? seed.walls : []
 }
 
-/** Metadata about the snapshot (when it was fetched, counts, etc.). */
-export function getSeedInfo() {
-  if (!seed) return { wallCount: 0, routeCount: 0 }
-  return {
-    generatedAt: seed.generatedAt,
-    source: seed.source,
-    seededAreas: seed.seededAreas,
-    wallCount: seed.wallCount,
-    routeCount: seed.routeCount,
-  }
-}
-
 /** All walls (crags), each with its list of routes. */
 export function getWalls() {
   return walls()

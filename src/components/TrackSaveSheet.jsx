@@ -82,6 +82,7 @@ export default function TrackSaveSheet({
           className="pin-input"
           type="text"
           value={name}
+          maxLength={120}
           placeholder="e.g. Approach to Juniper Wall"
           onChange={(e) => setName(e.target.value)}
         />
@@ -105,6 +106,7 @@ export default function TrackSaveSheet({
         <textarea
           className="pin-textarea"
           value={notes}
+          maxLength={2000}
           placeholder="Cairns at the fork, stay left, 10 min…"
           rows={2}
           onChange={(e) => setNotes(e.target.value)}

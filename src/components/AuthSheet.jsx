@@ -98,6 +98,7 @@ export default function AuthSheet({ onClose, onShowHelp, onShowInstall }) {
             <span className="filter-label">Display name (how buddies see you)</span>
             <input
               className="pin-input"
+              maxLength={60}
               type="text"
               value={name}
               placeholder="Your name"

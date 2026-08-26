@@ -94,6 +94,8 @@ export default function RouteLog({ route, wallId }) {
           <textarea
             className="pin-textarea"
             rows={2}
+            maxLength={2000}
+
             placeholder="Optional note: conditions, beta, how it felt…"
             value={note}
             onChange={(e) => setNote(e.target.value)}

@@ -72,6 +72,8 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
           className="pin-input"
           type="text"
           value={label}
+          maxLength={120}
+
           placeholder="e.g. Main lot, trail start…"
           onChange={(e) => setLabel(e.target.value)}
         />
@@ -82,6 +84,8 @@ export default function PinEditSheet({ pin, isNew, mine, onSave, onDelete, onCan
         <textarea
           className="pin-textarea"
           value={notes}
+          maxLength={2000}
+
           placeholder="Anything useful: gate code, 4WD only, hard to spot…"
           rows={3}
           onChange={(e) => setNotes(e.target.value)}
