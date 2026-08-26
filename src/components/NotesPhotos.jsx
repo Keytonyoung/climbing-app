@@ -18,7 +18,7 @@ import {
 import { setContributionDeleted } from '../data/contributions'
 import { reportContent } from '../data/reports'
 import { track, EVENTS } from '../lib/analytics'
-import { downscaleImage } from '../lib/image'
+import { downscaleImage, photoErrorMessage } from '../lib/image'
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -112,7 +112,7 @@ export default function NotesPhotos({ kind, id }) {
       track(EVENTS.CONTRIBUTION_CREATED, { type: 'photo' })
       setPhotos(await getPhotos(kind, id))
     } catch (err) {
-      setPhotoError(`Couldn't add that photo: ${err.message || err}`)
+      setPhotoError(photoErrorMessage(err))
     } finally {
       setBusy(false)
     }
