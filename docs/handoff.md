@@ -74,6 +74,30 @@ Draft A to Western Slope climbing communities, then let evidence drive the backl
    a real contributor will seed beta there (e.g. Cole's Alaska friends).
 6. **Liability**: never auto-generate safety-critical info. The disclaimer stays.
 
+## 3b. Security model (audited 2026-07-08)
+
+- **RLS is the entire security boundary.** The app is client-only and the anon
+  key is public by design, so anything not enforced by a policy is not enforced.
+  Never "protect" something in the UI and consider it done; the admin shield
+  button is cosmetic, `public.is_admin()` is the real gate.
+- **Postgres has no column-level RLS.** A policy restricts which ROWS you may
+  touch, never which COLUMNS. This is exactly how the privilege escalation got
+  in: `profiles update using (auth.uid() = id)` let a user set their own
+  `role` to `admin`. Column-level GRANTs are the fix and they sit underneath
+  RLS. If you ever add a sensitive column to a client-writable table, add it to
+  the grant list in `2026-07-08-security-hardening.sql` or it is writable.
+- **Never rate-limit or authorise on a client-supplied value.** `created_at` is
+  client-supplied on purpose (offline writes keep their real time), so the
+  original rate limit was bypassable by backdating. Server truth lives in
+  `inserted_at`, stamped by a trigger.
+- **An UPDATE policy with no WITH CHECK falls back to its USING clause**, which
+  usually means the new row is barely checked at all. That let anyone re-author
+  another climber's wall correction. Always write WITH CHECK explicitly.
+- Verify claims against the live database rather than reasoning alone, but know
+  that **supabase-js returns no error when an UPDATE or DELETE matches zero
+  rows**. A write that "succeeds" with `data: null` was silently filtered by
+  RLS, not permitted. That false positive nearly went into an audit report.
+
 ## 4. Environment & tooling gotchas (each of these cost real time once)
 
 - **Node is NOT on PATH.** Prefix every command:
