@@ -112,7 +112,7 @@ export default function NotesPhotos({ kind, id }) {
       track(EVENTS.CONTRIBUTION_CREATED, { type: 'photo' })
       setPhotos(await getPhotos(kind, id))
     } catch (err) {
-      setPhotoError(photoErrorMessage(err))
+      setPhotoError(photoErrorMessage(err, file))
     } finally {
       setBusy(false)
     }
