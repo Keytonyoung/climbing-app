@@ -50,6 +50,7 @@ export default function NotesPhotos({ kind, id }) {
     setPhotos(await getPhotos(kind, id))
   }
   const [photoError, setPhotoError] = useState(null)
+  const [photoStatus, setPhotoStatus] = useState(null)
 
   useEffect(() => {
     let alive = true
@@ -107,7 +108,7 @@ export default function NotesPhotos({ kind, id }) {
     setBusy(true)
     setPhotoError(null)
     try {
-      const blob = await downscaleImage(file)
+      const blob = await downscaleImage(file, { onStatus: setPhotoStatus })
       await addPhoto(kind, id, blob)
       track(EVENTS.CONTRIBUTION_CREATED, { type: 'photo' })
       setPhotos(await getPhotos(kind, id))
@@ -115,6 +116,7 @@ export default function NotesPhotos({ kind, id }) {
       setPhotoError(photoErrorMessage(err, file))
     } finally {
       setBusy(false)
+      setPhotoStatus(null)
     }
   }
 
@@ -208,6 +210,7 @@ export default function NotesPhotos({ kind, id }) {
         )}
       </div>
       {photos.length === 0 && !user && <p className="detail-desc muted">No photos yet.</p>}
+      {photoStatus && <p className="detail-desc muted">{photoStatus}</p>}
       {photoError && <p className="place-error">{photoError}</p>}
 
       {viewer && (

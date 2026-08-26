@@ -37,6 +37,50 @@ function fail(step, detail) {
   return err
 }
 
+// --- HEIC ------------------------------------------------------------------
+//
+// iPhones shoot HEIC and hand the raw file to a web upload rather than
+// transcoding it. Chrome, on Android and desktop, has no HEIC codec at all, so
+// every browser decode path fails. (Safari is the exception: WebKit borrows the
+// OS codec, so <img> works there.) The only fix that does not blame the user
+// for their phone's default is to decode it ourselves.
+//
+// The decoder is ~2.7MB, so it is imported dynamically and only when a HEIC
+// actually shows up. A normal JPEG never downloads a byte of it.
+
+/** ISO-BMFF brands that mean HEIC/HEIF. Bytes 4..8 are 'ftyp', 8..12 the brand. */
+const HEIC_BRANDS = ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1', 'heim', 'heis']
+
+async function isHeic(file) {
+  if (/image\/hei[cf]/i.test(file.type)) return true
+  if (/\.hei[cf]$/i.test(file.name || '')) return true
+  // Some browsers report an empty type for HEIC, so sniff the container too.
+  try {
+    const head = new Uint8Array(await file.slice(0, 12).arrayBuffer())
+    const tag = String.fromCharCode(...head.slice(4, 8))
+    if (tag !== 'ftyp') return false
+    return HEIC_BRANDS.includes(String.fromCharCode(...head.slice(8, 12)).toLowerCase())
+  } catch {
+    return false
+  }
+}
+
+async function heicToJpeg(file) {
+  let heic2any
+  try {
+    heic2any = (await import('heic2any')).default
+  } catch (e) {
+    // Offline, or the chunk failed to load. Photos already need signal.
+    throw fail('heic-load', e.name)
+  }
+  try {
+    const out = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
+    return Array.isArray(out) ? out[0] : out
+  } catch (e) {
+    throw fail('heic-decode', e?.message ? String(e.message).slice(0, 60) : e?.name)
+  }
+}
+
 async function decode(file) {
   const tried = []
   // Preferred: honours EXIF orientation, so portrait photos aren't sideways.
@@ -59,14 +103,22 @@ async function decode(file) {
   }
 }
 
-export async function downscaleImage(file, maxDim = 1600, quality = 0.8) {
+export async function downscaleImage(file, { maxDim = 1600, quality = 0.8, onStatus } = {}) {
   if (!file) throw fail('no-file')
   // An iPhone photo that still lives in iCloud, and hasn't been downloaded to
   // the device, can hand back an empty or unreadable file. That is a different
   // problem from an unsupported format and needs different advice.
   if (file.size === 0) throw fail('empty')
 
-  const source = await decode(file)
+  // Converting a few megabytes of HEIC takes seconds on a phone, so say so
+  // rather than leaving a silent spinner that reads as a hang.
+  let input = file
+  if (await isHeic(file)) {
+    onStatus?.('Converting from iPhone format…')
+    input = await heicToJpeg(file)
+  }
+
+  const source = await decode(input)
   const srcW = source.width || source.naturalWidth
   const srcH = source.height || source.naturalHeight
   if (!srcW || !srcH) throw fail('decode', 'zero dimensions')
@@ -105,6 +157,12 @@ export function photoErrorMessage(err, file) {
   if (step === 'empty') {
     msg =
       "That photo didn't load from your library. If it's stored in iCloud, open it in the Photos app first so it downloads to the phone, then try again."
+  } else if (step === 'heic-load') {
+    msg =
+      "Couldn't load the converter for iPhone photos. Check your connection and try again."
+  } else if (step === 'heic-decode') {
+    msg =
+      "That iPhone photo couldn't be converted. Try taking a new photo, or set Camera > Formats to Most Compatible on the phone that took it."
   } else if (step === 'no-file') {
     msg = 'No photo was selected.'
   } else if (step === 'decode' || raw === 'unsupported-image' || /decode|decoded|not supported/i.test(raw)) {

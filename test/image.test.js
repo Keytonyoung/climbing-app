@@ -52,3 +52,17 @@ describe('photoErrorMessage', () => {
     expect(photoErrorMessage(tagged('empty'), { type: '', size: 0 })).toMatch(/unknown type, 0 KB/)
   })
 })
+
+describe('HEIC handling', () => {
+  it('tells you the converter could not load, not that the photo is bad', () => {
+    const msg = photoErrorMessage(Object.assign(new Error('unsupported-image'), { step: 'heic-load' }))
+    expect(msg).toMatch(/converter/)
+    expect(msg).toMatch(/connection/)
+    expect(msg).not.toMatch(/format isn't supported/)
+  })
+
+  it('suggests Most Compatible when conversion itself fails', () => {
+    const msg = photoErrorMessage(Object.assign(new Error('unsupported-image'), { step: 'heic-decode' }))
+    expect(msg).toMatch(/Most Compatible/)
+  })
+})

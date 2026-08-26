@@ -13,6 +13,11 @@ export default defineConfig({
         // default precache cap. Raise it so the app shell still precaches for
         // offline. (Long-term fix: move routes to the backend, see the plan.)
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // The HEIC decoder is ~340KB gzipped and only ever runs when someone
+        // picks an iPhone photo. Precaching it would put that on every install
+        // for the majority who never do, and it would buy nothing offline:
+        // uploading a photo needs network regardless. Fetched on demand.
+        globIgnores: ['**/heic2any-*.js'],
         // Cache OpenFreeMap tiles, glyphs, sprites, and the style JSON so a
         // downloaded area (and anything viewed online) renders offline.
         runtimeCaching: [
